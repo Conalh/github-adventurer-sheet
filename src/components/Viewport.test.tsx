@@ -116,6 +116,12 @@ describe("Viewport", () => {
     expect(styles).toMatch(/\.inn-hearth\s*\{[^}]*pointer-events:\s*none/s);
   });
 
+  it("does not let the worn cape block adjacent display pointers", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(styles).toMatch(/\.skillcape\s*\{[^}]*pointer-events:\s*none/s);
+  });
+
   it("removes obsolete outdoor-only scene styles", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
 
