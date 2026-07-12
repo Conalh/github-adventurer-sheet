@@ -879,14 +879,14 @@ git commit -m "feat: render complete equipment inventory"
 
 ---
 
-### Task 7: Browser acceptance and production release
+### Task 7: Browser acceptance and release readiness
 
 **Files:**
 - Verify only; modify the smallest relevant file only if a failing acceptance check reveals a defect.
 
 **Interfaces:**
-- Consumes: completed Tasks 1-6 and the existing `deploy-pages.yml` workflow.
-- Produces: browser and production evidence for the released commit.
+- Consumes: completed Tasks 1-6.
+- Produces: fresh local, browser, and branch-scope evidence for final whole-branch review.
 
 - [ ] **Step 1: Run fresh local release gates**
 
@@ -934,36 +934,6 @@ git status --short
 Expected: the feature diff contains only the planned source/test/spec files;
 existing user-owned package and screenshot-tool changes are not staged.
 
-- [ ] **Step 5: Push the implementation branch and merge through the chosen workflow**
-
-```bash
-git push -u origin HEAD
-```
-
-Open the PR with a body listing the seven release gates. Merge only after review
-and green checks. A push to `main` must trigger `Deploy to Cloudflare Pages`.
-
-- [ ] **Step 6: Monitor the automated deployment**
-
-```bash
-RUN_ID=$(gh run list --repo Conalh/github-adventurer-sheet --workflow deploy-pages.yml --limit 1 --json databaseId --jq '.[0].databaseId')
-gh run watch "$RUN_ID" --repo Conalh/github-adventurer-sheet --exit-status
-```
-
-Expected: Install, Test, Build, and Deploy steps all succeed with zero annotations.
-
-- [ ] **Step 7: Verify Cloudflare and the canonical routes**
-
-```bash
-npx wrangler pages deployment list --project-name osrshub
-curl -I https://osrshub.conalhickey.com/
-curl -I https://osrshub.conalhickey.com/character/ConalH
-```
-
-Expected: newest production deployment matches the merged SHA; both canonical
-URLs return `200 OK`. Repeat the equipment-tab browser smoke test against the
-canonical hostname before declaring completion.
-
 ---
 
 ## Final Acceptance Checklist
@@ -977,3 +947,34 @@ canonical hostname before declaring completion.
 - [ ] No new GitHub calls or package dependencies exist.
 - [ ] Unit, integration, static-render, build, browser, CI, Cloudflare, and canonical-host gates all pass.
 - [ ] Unrelated user work remains untouched.
+
+## Post-Review Production Release
+
+Run these steps only after the mandatory whole-branch review approves the
+implementation.
+
+1. Push the implementation branch, open a PR with the local/browser evidence,
+   and merge after green checks:
+
+   ```bash
+   git push -u origin HEAD
+   ```
+
+2. Monitor the `Deploy to Cloudflare Pages` workflow:
+
+   ```bash
+   RUN_ID=$(gh run list --repo Conalh/github-adventurer-sheet --workflow deploy-pages.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+   gh run watch "$RUN_ID" --repo Conalh/github-adventurer-sheet --exit-status
+   ```
+
+   Expected: Install, Test, Build, and Deploy all succeed with zero annotations.
+
+3. Confirm the newest Cloudflare production deployment matches the merged SHA,
+   both canonical routes return `200 OK`, and the equipment-tab browser smoke
+   test passes against production:
+
+   ```bash
+   npx wrangler pages deployment list --project-name osrshub
+   curl -I https://osrshub.conalhickey.com/
+   curl -I https://osrshub.conalhickey.com/character/ConalH
+   ```
