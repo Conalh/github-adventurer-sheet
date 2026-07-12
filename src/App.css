@@ -1789,6 +1789,26 @@ button:focus-visible > .rs-tooltip {
   }
 }
 
+@media (min-width: 941px) and (max-width: 1120px) {
+  .trophy-wall { inset: 52px 24px 86px; }
+  .wall-zone.cape-hooks { grid-template-columns: minmax(0, 1fr) 220px minmax(0, 1fr); }
+  .cape-hook-group { flex-wrap: wrap; gap: 4px; }
+  .wall-zone.cape-hooks .wall-display { width: 32px; min-height: 47px; }
+  .wall-zone.cape-hooks .skillcape-art--wall { width: 32px; height: 47px; }
+  .wall-zone.upper-wall { width: 160px; }
+  .wall-zone.trophy-shelf { width: 160px; }
+  .wall-zone.upper-wall .wall-display-list,
+  .wall-zone.trophy-shelf .wall-display-list { gap: 10px 8px; padding: 18px 8px; }
+  .wall-zone.upper-wall .wall-display,
+  .wall-zone.trophy-shelf .wall-display { width: 56px; }
+  .wall-zone.upper-wall .trophy-art,
+  .wall-zone.trophy-shelf .trophy-art { width: 56px; }
+  .wall-zone.cape-hooks .cape-hook-group--left .wall-display-item .wall-display-tooltip,
+  .wall-zone.upper-wall .wall-display-tooltip { right: auto; left: 0; transform: none; }
+  .wall-zone.cape-hooks .cape-hook-group--right .wall-display-item .wall-display-tooltip,
+  .wall-zone.trophy-shelf .wall-display-tooltip { right: 0; left: auto; transform: none; }
+}
+
 @media (max-width: 940px) {
   .client-body {
     grid-template-columns: 1fr;

@@ -97,6 +97,15 @@ describe("Viewport", () => {
     expect(styles).toMatch(/\.status-orbs\s*\{[^}]*bottom:\s*112px[^}]*display:\s*flex/s);
   });
 
+  it("adapts display rails at the 941px desktop lower bound", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(styles).toMatch(
+      /@media\s*\(min-width:\s*941px\)\s*and\s*\(max-width:\s*1120px\)\s*\{(?=[\s\S]*?\.trophy-wall\s*\{[^}]*inset:\s*52px 24px 86px)(?=[\s\S]*?\.wall-zone\.cape-hooks\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) 220px minmax\(0, 1fr\))(?=[\s\S]*?\.cape-hook-group\s*\{[^}]*flex-wrap:\s*wrap[^}]*gap:\s*4px)(?=[\s\S]*?\.wall-zone\.upper-wall[^}]*width:\s*160px)(?=[\s\S]*?\.wall-zone\.trophy-shelf[^}]*width:\s*160px)/s,
+    );
+    expect(styles).toMatch(/\.wall-zone\.cape-hooks \.cape-hook-group--right \.wall-display-item \.wall-display-tooltip,\s*\.wall-zone\.trophy-shelf \.wall-display-tooltip\s*\{[^}]*right:\s*0[^}]*left:\s*auto[^}]*transform:\s*none/s);
+  });
+
   it("lets visible wall tooltips escape the player stack without clipping", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
 
