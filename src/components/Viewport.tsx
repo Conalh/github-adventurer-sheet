@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { skillXpFromScore, type CharacterSheet } from "../lib/githubCharacter";
 import type { ChatMessage } from "./Chatbox";
 import { CrownIcon, HeartIcon, SunburstIcon, SKILL_COLORS } from "./icons";
+import { TrophyWall } from "./TrophyWall";
 
 export function Viewport({
   sheet,
@@ -46,46 +47,20 @@ export function Viewport({
       className={grandmaster ? "viewport grandmaster" : "viewport"}
       aria-label="Character scene"
     >
-      <div className="scene-sky" aria-hidden="true" />
-      <span className="scene-stars" aria-hidden="true" />
-      {grandmaster ? (
-        <>
-          <span className="scene-aurora" aria-hidden="true" />
-          <span className="shooting-star" aria-hidden="true" />
-        </>
-      ) : null}
-      <div className="scene-hills" aria-hidden="true" />
-      <div className="scene-ground" aria-hidden="true" />
-
-      <span className="scene-tree left" aria-hidden="true">
-        <i className="canopy" />
-        <i className="trunk" />
+      <div className="inn-back-wall" aria-hidden="true">
+        <span className="inn-stonework" />
+        <span className="inn-beam beam-left" />
+        <span className="inn-beam beam-right" />
+        <span className="inn-beam beam-top" />
+        <span className="inn-banner banner-left" />
+        <span className="inn-banner banner-right" />
+      </div>
+      <TrophyWall displays={sheet.trophyRoom.displays} />
+      <span className="inn-hearth" aria-hidden="true">
+        <i className="hearth-mantle" />
+        <i className="hearth-fire" />
       </span>
-      <span className="scene-tree right" aria-hidden="true">
-        <i className="canopy" />
-        <i className="trunk" />
-      </span>
-      <span className="scene-rock a" aria-hidden="true" />
-      <span className="scene-rock b" aria-hidden="true" />
-
-      <span className="campfire" aria-hidden="true">
-        <i className="fire-glow" />
-        <i className="log a" />
-        <i className="log b" />
-        <i className="flame outer" />
-        <i className="flame inner" />
-      </span>
-
-      {grandmaster ? <span className="pet-phoenix" aria-hidden="true" /> : null}
-
-      {prestige.ninetyNines.slice(0, 3).map((skill, index) => (
-        <span
-          key={skill}
-          className={`firework f${index + 1}`}
-          style={{ "--burst-color": SKILL_COLORS[skill] } as CSSProperties}
-          aria-hidden="true"
-        />
-      ))}
+      <div className="inn-floor" aria-hidden="true" />
 
       <div className="status-orbs">
         <div
@@ -108,14 +83,6 @@ export function Viewport({
             <SunburstIcon />
           </span>
         </div>
-      </div>
-
-      <div className="minimap" aria-hidden="true">
-        <span className="minimap-blob a" />
-        <span className="minimap-blob b" />
-        <span className="minimap-path" />
-        <span className="minimap-dot" />
-        <span className="minimap-compass">N</span>
       </div>
 
       <div className="player">
@@ -176,7 +143,7 @@ export function Viewport({
               onClick={() =>
                 chooseOption([
                   "game",
-                  "You walk to the other side of the meadow. The commit history follows you."
+                  "You cross to the other side of the inn. The commit history follows you."
                 ])
               }
             >

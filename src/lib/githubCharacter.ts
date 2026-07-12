@@ -3,6 +3,7 @@ import {
   type CharacterEquipment,
   type EquipmentRepoInput
 } from "./equipment";
+import { buildTrophyRoom, type TrophyRoom } from "./trophyRoom";
 
 export type GitHubUser = {
   login: string;
@@ -116,6 +117,7 @@ export type CharacterSheet = {
   skills: Record<SkillName, number>;
   skillScores: Record<SkillName, number>;
   prestige: Prestige;
+  trophyRoom: TrophyRoom;
   strongestSkill: Exclude<SkillName, "Hitpoints">;
   characterClass: string;
   totalLevel: number;
@@ -460,6 +462,14 @@ export function calculateCharacterSheet(
   const topicCounts = getTopCounts(repos.flatMap((repo) => getRepoTopics(repo)));
   const totalLevel = SKILL_NAMES.reduce((sum, skill) => sum + skills[skill], 0);
   const prestige = getPrestige({ skills, skillScores, totalLevel });
+  const trophyRoom = buildTrophyRoom({
+    skills,
+    skillScores,
+    followers: user.followers,
+    accountCreatedAt: user.created_at,
+    repos,
+    now
+  });
 
   return {
     user,
@@ -468,6 +478,7 @@ export function calculateCharacterSheet(
     skills,
     skillScores,
     prestige,
+    trophyRoom,
     strongestSkill,
     characterClass: CLASS_BY_SKILL[strongestSkill],
     totalLevel,
@@ -513,7 +524,7 @@ export async function getGitHubCharacter(
 }
 
 export function getCharacterCacheKey(username: string): string {
-  return `github-character:v5:${username}`;
+  return `github-character:v6:${username}`;
 }
 
 async function fetchRepos(
