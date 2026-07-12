@@ -1,20 +1,28 @@
+import { useEffect, useState, type FormEvent } from "react";
 import {
-  type CSSProperties,
-  type FormEvent,
-  useEffect,
-  useState
-} from "react";
-import {
-  type CharacterQuest,
-  type CharacterSheet,
-  type GitHubCharacterErrorKind,
-  type SkillName,
   GitHubCharacterError,
-  SKILL_NAMES,
   formatDate,
   getGitHubCharacter,
-  parseGitHubUsername
+  parseGitHubUsername,
+  type CharacterSheet,
+  type GitHubCharacterErrorKind
 } from "./lib/githubCharacter";
+import { AdventurerCard } from "./components/AdventurerCard";
+import { AchievementHall } from "./components/AchievementHall";
+import { EquipmentPanel } from "./components/EquipmentPanel";
+import { QuestLog } from "./components/QuestLog";
+import { SkillGrid } from "./components/SkillGrid";
+import { ErrorState, LoadingState } from "./components/StatePanels";
+import {
+  BackpackIcon,
+  CheckIcon,
+  CrestIcon,
+  LinkIcon,
+  ScrollIcon,
+  SwordIcon,
+  TrophyIcon
+} from "./components/icons";
+import { Embers, Flourish, Panel, PanelHeading } from "./components/ui";
 
 const DEMO_USERNAME = "ConalH";
 
@@ -67,8 +75,14 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <div className="backdrop" aria-hidden="true" />
+      <Embers />
+
       <header className="topbar">
         <button className="brand-button" type="button" onClick={navigateToDemo}>
+          <span className="brand-crest" aria-hidden="true">
+            <CrestIcon />
+          </span>
           GitHub Adventurer Sheet
         </button>
         <SearchForm
@@ -78,10 +92,33 @@ export default function App() {
         />
       </header>
 
-      <CharacterPage
-        username={route.username}
-        isDemo={route.kind === "demo"}
-      />
+      <main className="page-frame">
+        <section className="hero" aria-labelledby="hero-title">
+          <p className="section-kicker">✦ The Character Forge ✦</p>
+          <h1 id="hero-title">Every repo leaves a mark</h1>
+          <p className="hero-sub">
+            Summon any public GitHub profile as a fantasy adventurer — skills,
+            quests, relics, and deeds, all computed from real data.
+          </p>
+          <SearchForm
+            initialValue={route.kind === "demo" ? "" : route.username}
+            onNavigate={navigateToCharacter}
+          />
+          <Flourish />
+        </section>
+
+        <CharacterPage
+          username={route.username}
+          isDemo={route.kind === "demo"}
+        />
+      </main>
+
+      <footer className="site-footer">
+        <p>
+          Forged from the public GitHub API · No login, no tracking · Levels are
+          deterministic, honor is earned
+        </p>
+      </footer>
     </div>
   );
 }
@@ -107,6 +144,7 @@ function CharacterPage({
   isDemo: boolean;
 }) {
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -136,32 +174,36 @@ function CharacterPage({
       });
 
     return () => controller.abort();
-  }, [username]);
+  }, [username, attempt]);
+
+  useEffect(() => {
+    if (loadState.status === "loaded") {
+      const displayName = loadState.sheet.user.name || loadState.sheet.user.login;
+      document.title = `${displayName} — GitHub Adventurer Sheet`;
+    } else {
+      document.title = "GitHub Adventurer Sheet";
+    }
+  }, [loadState]);
 
   return (
-    <main className="page-frame">
-      <section className="summon-panel" aria-labelledby="summon-title">
-        <div className="summon-copy">
-          <p className="section-kicker">GitHub character forge</p>
-          <h1 id="summon-title">Roll a GitHub hero.</h1>
-          <p>Every repo leaves a mark.</p>
-        </div>
-      </section>
-
-      {loadState.status === "loading" ? <LoadingState username={username} /> : null}
+    <>
+      {loadState.status === "loading" ? (
+        <LoadingState username={username} />
+      ) : null}
 
       {loadState.status === "error" ? (
         <ErrorState
           kind={loadState.kind}
           message={loadState.message}
           username={username}
+          onRetry={() => setAttempt((count) => count + 1)}
         />
       ) : null}
 
       {loadState.status === "loaded" ? (
         <CharacterSheetView sheet={loadState.sheet} isDemo={isDemo} />
       ) : null}
-    </main>
+    </>
   );
 }
 
@@ -214,6 +256,7 @@ function SearchForm({
           placeholder="ConalH or https://github.com/ConalH"
           onChange={(event) => setValue(event.target.value)}
           autoComplete="off"
+          spellCheck={false}
         />
         <button type="submit">Summon</button>
       </div>
@@ -233,7 +276,6 @@ function CharacterSheetView({
   sheet: CharacterSheet;
   isDemo: boolean;
 }) {
-  const displayName = sheet.user.name || sheet.user.login;
   const profileFacts = [
     ["Location", sheet.user.location || "Unlisted"],
     ["Company", sheet.user.company || "Unlisted"],
@@ -243,67 +285,21 @@ function CharacterSheetView({
     ["Following", sheet.user.following.toLocaleString()],
     ["Public repos", sheet.user.public_repos.toLocaleString()]
   ];
-  const cardStats: Array<[SkillName, string]> = [
-    ["Attack", "ATK"],
-    ["Strength", "STR"],
-    ["Defence", "DEF"],
-    ["Ranged", "RNG"],
-    ["Magic", "MAG"],
-    ["Crafting", "CRF"]
-  ];
 
   return (
     <div className="character-grid">
-      <section className="adventurer-card" aria-labelledby="character-name">
-        <div className="card-topline">
-          <div>
-            <strong>{sheet.combatLevel}</strong>
-            <span>CBT</span>
-          </div>
-          <div>
-            <strong>{sheet.totalLevel}</strong>
-            <span>TOTAL</span>
-          </div>
-        </div>
-
-        <div className="portrait-shell">
-          {sheet.user.avatar_url ? (
-            <img
-              src={sheet.user.avatar_url}
-              alt={`${displayName} GitHub avatar`}
-              className="avatar"
-            />
-          ) : (
-            <div className="avatar avatar-fallback" aria-label="No GitHub avatar">
-              {sheet.user.login.slice(0, 2).toUpperCase()}
-            </div>
-          )}
-        </div>
-
-        <div className="identity-copy">
-          {isDemo ? <p className="section-kicker">Default demo</p> : null}
-          <p className="class-title">{sheet.characterClass}</p>
-          <h2 id="character-name">{displayName}</h2>
-          <a href={sheet.user.html_url} target="_blank" rel="noreferrer">
-            @{sheet.user.login}
-          </a>
-        </div>
-
-        <dl className="card-stat-grid" aria-label="Primary GitHub character stats">
-          {cardStats.map(([skill, label]) => (
-            <div key={skill}>
-              <dt>{label}</dt>
-              <dd>{sheet.skills[skill]}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <p className="card-footer">GITHUB QUEST CARD</p>
-      </section>
+      <div className="card-area">
+        <AdventurerCard sheet={sheet} isDemo={isDemo} />
+      </div>
 
       <div className="side-stack">
-        <section className="panel identity-summary" aria-labelledby="identity-summary">
-          <h2 id="identity-summary">{sheet.strongestSkill} specialist</h2>
+        <Panel className="identity-summary" aria-labelledby="identity-summary-title">
+          <div className="summary-headline">
+            <h2 id="identity-summary-title">
+              {sheet.strongestSkill} specialist
+            </h2>
+            <ShareButton username={sheet.user.login} />
+          </div>
           {sheet.user.bio ? <p className="bio">{sheet.user.bio}</p> : null}
           <div className="level-runes" aria-label="Character levels">
             <div>
@@ -315,14 +311,10 @@ function CharacterSheetView({
               <strong>{sheet.totalLevel}</strong>
             </div>
             <div>
-              <span>Repos</span>
+              <span>Quests</span>
               <strong>{sheet.metrics.totalRepos}</strong>
             </div>
           </div>
-        </section>
-
-        <section className="panel metadata-panel" aria-labelledby="profile-metadata">
-          <h2 id="profile-metadata">Profile Ledger</h2>
           <dl className="fact-list">
             {profileFacts.map(([label, value]) => (
               <div key={label}>
@@ -339,195 +331,88 @@ function CharacterSheetView({
               </div>
             ))}
           </dl>
-        </section>
+        </Panel>
 
-        <section className="panel equipment-panel" aria-labelledby="equipment-title">
-          <h2 id="equipment-title">Equipment</h2>
-          <EquipmentList sheet={sheet} />
-        </section>
+        <Panel className="equipment-panel" aria-labelledby="equipment-title">
+          <PanelHeading
+            id="equipment-title"
+            icon={<BackpackIcon />}
+            title="Equipment"
+            note="Relics earned through real works"
+          />
+          <EquipmentPanel sheet={sheet} />
+        </Panel>
       </div>
 
-      <section className="panel skills-panel" aria-labelledby="skills-title">
-        <div className="panel-heading">
-          <h2 id="skills-title">Skill Table</h2>
-          <p>{sheet.metrics.totalRepos.toLocaleString()} public quests scanned</p>
-        </div>
-        <SkillTable sheet={sheet} />
-      </section>
+      <Panel className="skills-panel" aria-labelledby="skills-title">
+        <PanelHeading
+          id="skills-title"
+          icon={<SwordIcon />}
+          title="Skills"
+          note={`${sheet.metrics.totalRepos.toLocaleString()} public quests scanned`}
+        />
+        <SkillGrid sheet={sheet} />
+      </Panel>
 
-      <section className="panel quest-panel" aria-labelledby="quest-title">
-        <div className="panel-heading">
-          <h2 id="quest-title">Quest Log</h2>
-          <p>Top repositories by stars, forks, and recent activity</p>
-        </div>
+      <Panel className="achievement-panel" aria-labelledby="achievements-title">
+        <PanelHeading
+          id="achievements-title"
+          icon={<TrophyIcon />}
+          title="Hall of Deeds"
+          note="Achievements measured from the public record"
+        />
+        <AchievementHall sheet={sheet} />
+      </Panel>
+
+      <Panel className="quest-panel" aria-labelledby="quest-title">
+        <PanelHeading
+          id="quest-title"
+          icon={<ScrollIcon />}
+          title="Quest Log"
+          note="Top repositories by stars, forks, and recency"
+        />
         <QuestLog quests={sheet.quests} />
-      </section>
+      </Panel>
     </div>
   );
 }
 
-function SkillTable({ sheet }: { sheet: CharacterSheet }) {
-  return (
-    <div className="table-wrap">
-      <table className="skill-table">
-        <caption>Deterministic GitHub-to-character skill levels</caption>
-        <thead>
-          <tr>
-            <th scope="col">Skill</th>
-            <th scope="col">Level</th>
-            <th scope="col">Signal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {SKILL_NAMES.map((skill) => (
-            <tr key={skill}>
-              <th scope="row">{skill}</th>
-              <td>{sheet.skills[skill]}</td>
-              <td>
-                <SkillMeter skill={skill} level={sheet.skills[skill]} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+function ShareButton({ username }: { username: string }) {
+  const [copied, setCopied] = useState(false);
 
-function SkillMeter({ skill, level }: { skill: SkillName; level: number }) {
-  return (
-    <div
-      className="skill-meter"
-      aria-label={`${skill} level ${level} of 99`}
-      style={{ "--skill-level": `${level}%` } as CSSProperties}
-    >
-      <span />
-    </div>
-  );
-}
+  useEffect(() => {
+    if (!copied) {
+      return;
+    }
 
-function EquipmentList({ sheet }: { sheet: CharacterSheet }) {
-  const equipment = [
-    ["Main hand", sheet.equipment.mainHand],
-    ["Off hand", sheet.equipment.offHand],
-    ["Cape", sheet.equipment.cape],
-    ["Amulet", sheet.equipment.amulet],
-    ["Ring", sheet.equipment.ring]
-  ];
+    const timer = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
 
-  return (
-    <>
-      <dl className="equipment-list">
-        {equipment.map(([label, value]) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
+  const handleCopy = async () => {
+    const url = `${window.location.origin}/character/${encodeURIComponent(
+      username
+    )}`;
 
-      <div className="backpack">
-        <h3>Backpack</h3>
-        <ul>
-          {sheet.equipment.backpack.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </div>
-    </>
-  );
-}
-
-function QuestLog({ quests }: { quests: CharacterQuest[] }) {
-  if (quests.length === 0) {
-    return (
-      <div className="empty-state">
-        <h3>No public quests recorded</h3>
-        <p>This profile has no public repositories available through the GitHub API.</p>
-      </div>
-    );
-  }
-
-  return (
-    <ol className="quest-list">
-      {quests.map((quest) => (
-        <li key={quest.repo.id} className="quest-card">
-          <div>
-            <h3>
-              <a href={quest.repo.html_url} target="_blank" rel="noreferrer">
-                {quest.repo.name}
-              </a>
-            </h3>
-            <p>{quest.description}</p>
-          </div>
-          <dl className="quest-stats">
-            <div>
-              <dt>Difficulty</dt>
-              <dd>
-                {quest.difficulty} ({quest.difficultyScore})
-              </dd>
-            </div>
-            <div>
-              <dt>Language</dt>
-              <dd>{quest.language}</dd>
-            </div>
-            <div>
-              <dt>Stars</dt>
-              <dd>{quest.repo.stargazers_count.toLocaleString()}</dd>
-            </div>
-            <div>
-              <dt>Forks</dt>
-              <dd>{quest.repo.forks_count.toLocaleString()}</dd>
-            </div>
-            <div>
-              <dt>Updated</dt>
-              <dd>{quest.updatedLabel}</dd>
-            </div>
-          </dl>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-function LoadingState({ username }: { username: string }) {
-  return (
-    <section className="state-panel" aria-busy="true" aria-live="polite">
-      <p className="section-kicker">Consulting GitHub</p>
-      <h2>Building @{username}</h2>
-      <div className="skeleton-grid" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
-    </section>
-  );
-}
-
-function ErrorState({
-  kind,
-  message,
-  username
-}: {
-  kind: GitHubCharacterErrorKind;
-  message: string;
-  username: string;
-}) {
-  const titleByKind: Record<GitHubCharacterErrorKind, string> = {
-    invalid_username: "Invalid adventurer name",
-    not_found: "Adventurer not found",
-    rate_limit: "GitHub rate limit reached",
-    network: "Network path blocked",
-    generic: "Character sheet failed"
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      window.prompt("Copy this character sheet link:", url);
+    }
   };
 
   return (
-    <section className="state-panel error-state" role="alert">
-      <p className="section-kicker">Could not summon @{username}</p>
-      <h2>{titleByKind[kind]}</h2>
-      <p>{message}</p>
-    </section>
+    <button
+      type="button"
+      className={copied ? "share-button copied" : "share-button"}
+      onClick={handleCopy}
+    >
+      <span className="meta-icon" aria-hidden="true">
+        {copied ? <CheckIcon /> : <LinkIcon />}
+      </span>
+      {copied ? "Link copied" : "Share sheet"}
+    </button>
   );
 }
 

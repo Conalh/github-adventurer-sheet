@@ -58,13 +58,31 @@ export type CharacterQuest = {
   updatedLabel: string;
 };
 
+export type Rarity = "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary";
+
+export type EquipmentSlot = "Main hand" | "Off hand" | "Cape" | "Amulet" | "Ring";
+
+export type EquipmentItem = {
+  slot: EquipmentSlot;
+  name: string;
+  detail: string;
+  rarity: Rarity;
+  href?: string;
+};
+
 export type CharacterEquipment = {
-  mainHand: string;
-  offHand: string;
-  cape: string;
-  amulet: string;
-  ring: string;
+  items: EquipmentItem[];
   backpack: string[];
+};
+
+export type Achievement = {
+  id: string;
+  name: string;
+  requirement: string;
+  flavor: string;
+  earned: boolean;
+  current: number;
+  goal: number;
 };
 
 export type RepositoryMetrics = {
@@ -155,6 +173,19 @@ const CLASS_BY_SKILL: Record<Exclude<SkillName, "Hitpoints">, string> = {
   Mining: "Repo Miner",
   Smithing: "Build Smith",
   Prayer: "Community Acolyte"
+};
+
+export const SKILL_LORE: Record<SkillName, string> = {
+  Attack: "Original repositories forged by hand",
+  Strength: "Stars earned across the realm",
+  Defence: "Years of service and guarded archives",
+  Ranged: "Forks and watchers reached from afar",
+  Magic: "Tongues spoken and topics mastered",
+  Crafting: "Works described and published to the world",
+  Mining: "Repositories unearthed from the deep",
+  Smithing: "Fresh works still warm from the anvil",
+  Prayer: "Followers and fellowships of the order",
+  Hitpoints: "Vitality drawn from every combat art"
 };
 
 type CacheRecord = {
@@ -341,7 +372,7 @@ export function calculateCharacterSheet(
     totalLevel: SKILL_NAMES.reduce((sum, skill) => sum + skills[skill], 0),
     combatLevel: calculateCombatLevel(skills),
     quests: getTopQuests(repos),
-    equipment: getEquipment(repos, metrics.accountAgeYears, languageCounts, topicCounts),
+    equipment: getEquipment(repos, metrics.accountAgeYears, languageCounts, topicCounts, now),
     languageCounts,
     topicCounts
   };
@@ -370,7 +401,7 @@ export async function getGitHubCharacter(
 }
 
 export function getCharacterCacheKey(username: string): string {
-  return `github-character:${username}`;
+  return `github-character:v2:${username}`;
 }
 
 async function fetchRepos(
@@ -536,16 +567,90 @@ function getTopQuests(repos: GitHubRepo[]): CharacterQuest[] {
     }));
 }
 
+export function rarityFromThresholds(
+  value: number,
+  thresholds: [number, number, number, number]
+): Rarity {
+  const [uncommon, rare, epic, legendary] = thresholds;
+
+  if (value >= legendary) {
+    return "Legendary";
+  }
+
+  if (value >= epic) {
+    return "Epic";
+  }
+
+  if (value >= rare) {
+    return "Rare";
+  }
+
+  if (value >= uncommon) {
+    return "Uncommon";
+  }
+
+  return "Common";
+}
+
+export function getMainHandRarity(stars: number): Rarity {
+  return rarityFromThresholds(stars, [10, 50, 250, 1000]);
+}
+
+export function getOffHandRarity(forks: number): Rarity {
+  return rarityFromThresholds(forks, [5, 25, 100, 500]);
+}
+
+export function getCapeRarity(accountAgeYears: number): Rarity {
+  return rarityFromThresholds(accountAgeYears, [1, 2, 5, 10]);
+}
+
+export function getAmuletRarity(distinctLanguages: number): Rarity {
+  return rarityFromThresholds(distinctLanguages, [2, 4, 7, 10]);
+}
+
+export function getRingRarity(updatedAt: string, now: Date): Rarity {
+  const updatedTime = getTime(updatedAt);
+
+  if (updatedTime === 0) {
+    return "Common";
+  }
+
+  const daysSince = (now.getTime() - updatedTime) / (24 * 60 * 60 * 1000);
+
+  if (daysSince < 0) {
+    return "Common";
+  }
+
+  if (daysSince <= 7) {
+    return "Legendary";
+  }
+
+  if (daysSince <= 30) {
+    return "Epic";
+  }
+
+  if (daysSince <= 90) {
+    return "Rare";
+  }
+
+  if (daysSince <= 365) {
+    return "Uncommon";
+  }
+
+  return "Common";
+}
+
 function getEquipment(
   repos: GitHubRepo[],
   accountAgeYears: number,
   languageCounts: Array<{ name: string; count: number }>,
-  topicCounts: Array<{ name: string; count: number }>
+  topicCounts: Array<{ name: string; count: number }>,
+  now: Date
 ): CharacterEquipment {
   const mostStarred = maxRepo(repos, (repo) => repo.stargazers_count);
   const mostForked = maxRepo(repos, (repo) => repo.forks_count);
   const mostRecent = maxRepo(repos, (repo) => getTime(repo.updated_at));
-  const mostUsedLanguage = languageCounts[0]?.name;
+  const mostUsedLanguage = languageCounts[0];
   const backpack = [...languageCounts, ...topicCounts]
     .sort((left, right) => {
       if (right.count !== left.count) {
@@ -557,18 +662,226 @@ function getEquipment(
     .slice(0, 6)
     .map((item) => item.name);
 
+  const mainHand: EquipmentItem = mostStarred
+    ? {
+        slot: "Main hand",
+        name: `Blade of ${mostStarred.name}`,
+        detail:
+          mostStarred.stargazers_count > 0
+            ? `${pluralize(mostStarred.stargazers_count, "star")} — most starred work`
+            : "Freshly forged, awaiting its first star",
+        rarity: getMainHandRarity(mostStarred.stargazers_count),
+        href: mostStarred.html_url
+      }
+    : {
+        slot: "Main hand",
+        name: "Empty scabbard",
+        detail: "No public repository to forge a blade from",
+        rarity: "Common"
+      };
+
+  const offHand: EquipmentItem = mostForked
+    ? {
+        slot: "Off hand",
+        name: `Aegis of ${mostForked.name}`,
+        detail:
+          mostForked.forks_count > 0
+            ? `${pluralize(mostForked.forks_count, "fork")} — most forked work`
+            : "Unscarred, awaiting its first fork",
+        rarity: getOffHandRarity(mostForked.forks_count),
+        href: mostForked.html_url
+      }
+    : {
+        slot: "Off hand",
+        name: "Bare arm",
+        detail: "No forked work to raise as a shield",
+        rarity: "Common"
+      };
+
+  const cape: EquipmentItem = {
+    slot: "Cape",
+    name: getAccountAgeCape(accountAgeYears),
+    detail:
+      accountAgeYears >= 1
+        ? `Woven over ${Math.floor(accountAgeYears).toLocaleString()} year${
+            Math.floor(accountAgeYears) === 1 ? "" : "s"
+          } of service`
+        : "Freshly woven this very year",
+    rarity: getCapeRarity(accountAgeYears)
+  };
+
+  const amulet: EquipmentItem = mostUsedLanguage
+    ? {
+        slot: "Amulet",
+        name: `${mostUsedLanguage.name} Amulet`,
+        detail: `Attuned through ${mostUsedLanguage.count.toLocaleString()} ${
+          mostUsedLanguage.count === 1 ? "repository" : "repositories"
+        }`,
+        rarity: getAmuletRarity(languageCounts.length)
+      }
+    : {
+        slot: "Amulet",
+        name: "Unattuned Amulet",
+        detail: "No dominant tongue detected",
+        rarity: "Common"
+      };
+
+  const ring: EquipmentItem = mostRecent
+    ? {
+        slot: "Ring",
+        name: `Signet of ${mostRecent.name}`,
+        detail: `Last touched ${formatDate(mostRecent.updated_at)}`,
+        rarity: getRingRarity(mostRecent.updated_at, now),
+        href: mostRecent.html_url
+      }
+    : {
+        slot: "Ring",
+        name: "Bare finger",
+        detail: "No recent work to seal",
+        rarity: "Common"
+      };
+
   return {
-    mainHand: mostStarred
-      ? `${mostStarred.name} (${mostStarred.stargazers_count} stars)`
-      : "No main hand discovered",
-    offHand: mostForked
-      ? `${mostForked.name} (${mostForked.forks_count} forks)`
-      : "No off hand discovered",
-    cape: getAccountAgeCape(accountAgeYears),
-    amulet: mostUsedLanguage ? `${mostUsedLanguage} Amulet` : "Unattuned Amulet",
-    ring: mostRecent ? `${mostRecent.name} Ring` : "No ring discovered",
+    items: [mainHand, offHand, cape, amulet, ring],
     backpack: backpack.length > 0 ? backpack : ["No supplies discovered"]
   };
+}
+
+export function getAchievements(
+  user: Pick<GitHubUser, "followers">,
+  metrics: RepositoryMetrics
+): Achievement[] {
+  const define = (
+    id: string,
+    name: string,
+    requirement: string,
+    flavor: string,
+    current: number,
+    goal: number
+  ): Achievement => ({
+    id,
+    name,
+    requirement,
+    flavor,
+    earned: current >= goal,
+    current: Math.max(0, Math.floor(current)),
+    goal
+  });
+
+  return [
+    define(
+      "first-forge",
+      "First Forge",
+      "Create an original repository",
+      "Every legend begins with a single commit.",
+      metrics.originalRepos,
+      1
+    ),
+    define(
+      "prolific-author",
+      "Prolific Author",
+      "Create 25 original repositories",
+      "The shelves groan under the weight of your works.",
+      metrics.originalRepos,
+      25
+    ),
+    define(
+      "starfall",
+      "Starfall",
+      "Earn 100 stars across all works",
+      "The night sky bends toward your name.",
+      metrics.totalStars,
+      100
+    ),
+    define(
+      "supernova",
+      "Supernova",
+      "Earn 1,000 stars across all works",
+      "Astronomers file complaints about the glare.",
+      metrics.totalStars,
+      1000
+    ),
+    define(
+      "polyglot",
+      "Polyglot",
+      "Write in 5 different languages",
+      "You order breakfast fluently in every tavern.",
+      metrics.distinctLanguages,
+      5
+    ),
+    define(
+      "archmage-of-tongues",
+      "Archmage of Tongues",
+      "Write in 10 different languages",
+      "Compilers whisper your name with respect.",
+      metrics.distinctLanguages,
+      10
+    ),
+    define(
+      "fork-lord",
+      "Fork Lord",
+      "Receive 50 forks across all works",
+      "Your bloodline spreads across a thousand branches.",
+      metrics.totalForksReceived,
+      50
+    ),
+    define(
+      "beloved",
+      "Beloved of the Crowds",
+      "Gather 100 followers",
+      "They cheer before you even push.",
+      user.followers,
+      100
+    ),
+    define(
+      "veteran",
+      "Veteran of the Realm",
+      "Serve 5 years on GitHub",
+      "You remember when the dashboard looked different.",
+      metrics.accountAgeYears,
+      5
+    ),
+    define(
+      "elder",
+      "Elder of the Realm",
+      "Serve 10 years on GitHub",
+      "Junior adventurers ask you about the old wars.",
+      metrics.accountAgeYears,
+      10
+    ),
+    define(
+      "lorekeeper",
+      "Lorekeeper",
+      "Describe 10 of your repositories",
+      "A README for every ruin, a scroll for every spell.",
+      metrics.describedRepos,
+      10
+    ),
+    define(
+      "cartographer",
+      "Cartographer",
+      "Tag works with 10 unique topics",
+      "No corner of the map remains unlabeled.",
+      metrics.uniqueTopics,
+      10
+    ),
+    define(
+      "homesteader",
+      "Homesteader",
+      "Publish 3 repositories with homepages",
+      "Your works have doors, windows, and a welcome mat.",
+      metrics.homepageRepos,
+      3
+    ),
+    define(
+      "keeper-of-the-flame",
+      "Keeper of the Flame",
+      "Update 5 repositories within 90 days",
+      "The forge never cools on your watch.",
+      metrics.recentlyUpdatedRepos,
+      5
+    )
+  ];
 }
 
 function getStrongestSkill(
@@ -616,6 +929,10 @@ function getTopCounts(values: string[]): Array<{ name: string; count: number }> 
 
       return left.name.localeCompare(right.name);
     });
+}
+
+function pluralize(count: number, noun: string): string {
+  return `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
 }
 
 function getRepoTopics(repo: GitHubRepo): string[] {
