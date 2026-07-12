@@ -1,9 +1,6 @@
 import type { ReactNode, SVGProps } from "react";
-import type {
-  CharacterSheet,
-  EquipmentItem,
-  EquipmentSlot
-} from "../../lib/githubCharacter";
+import type { CharacterSheet } from "../../lib/githubCharacter";
+import type { EquipmentItem, EquipmentSlot } from "../../lib/equipment";
 import type { ChatMessage } from "../Chatbox";
 import {
   AmuletIcon,
@@ -21,33 +18,31 @@ import {
 
 type IconComponent = (props: SVGProps<SVGSVGElement>) => ReactNode;
 
-const FILLED_SLOT_ICONS: Record<EquipmentSlot, IconComponent> = {
+const SLOT_ICONS: Record<EquipmentSlot, IconComponent> = {
+  Head: HelmetIcon,
   "Main hand": SwordIcon,
   "Off hand": ShieldIcon,
   Cape: CapeIcon,
   Amulet: AmuletIcon,
-  Ring: RingIcon
+  Ring: RingIcon,
+  Ammo: ArrowsIcon,
+  Body: TorsoIcon,
+  Legs: LegsIcon,
+  Hands: GlovesIcon,
+  Feet: BootsIcon
 };
 
-const EMPTY_SLOTS: Array<{
-  id: string;
-  label: string;
-  icon: IconComponent;
-  area: string;
-}> = [
-  { id: "head", label: "Head slot (empty)", icon: HelmetIcon, area: "head" },
-  { id: "ammo", label: "Ammo slot (empty)", icon: ArrowsIcon, area: "ammo" },
-  { id: "body", label: "Body slot (empty)", icon: TorsoIcon, area: "body" },
-  { id: "legs", label: "Legs slot (empty)", icon: LegsIcon, area: "legs" },
-  { id: "hands", label: "Hands slot (empty)", icon: GlovesIcon, area: "hands" },
-  { id: "feet", label: "Feet slot (empty)", icon: BootsIcon, area: "feet" }
-];
-
 const SLOT_AREAS: Record<EquipmentSlot, string> = {
+  Head: "head",
   Cape: "cape",
   Amulet: "neck",
+  Ammo: "ammo",
   "Main hand": "weapon",
+  Body: "body",
   "Off hand": "shield",
+  Legs: "legs",
+  Hands: "hands",
+  Feet: "feet",
   Ring: "ring"
 };
 
@@ -69,7 +64,7 @@ export function EquipmentTab({
     <div className="equipment-tab">
       <div className="worn-grid" aria-label="Worn equipment">
         {sheet.equipment.items.map((item) => {
-          const SlotIcon = FILLED_SLOT_ICONS[item.slot];
+          const SlotIcon = SLOT_ICONS[item.slot];
           const edgeClass =
             item.slot === "Off hand" || item.slot === "Ring" ? " tip-end" : "";
 
@@ -96,37 +91,21 @@ export function EquipmentTab({
           );
         })}
 
-        {EMPTY_SLOTS.map((slot) => {
-          const SlotIcon = slot.icon;
-
-          return (
-            <span
-              key={slot.id}
-              className="worn-slot empty"
-              style={{ gridArea: slot.area }}
-              aria-label={slot.label}
-            >
-              <SlotIcon />
-            </span>
-          );
-        })}
       </div>
 
       <h3 className="rs-subheading">Backpack</h3>
       <ul className="inventory-grid" aria-label="Backpack supplies">
         {sheet.equipment.backpack.map((item) => (
-          <li key={item}>
+          <li key={item.id}>
             <button
               type="button"
               className="inventory-item"
-              onClick={() =>
-                say("examine", `It's a satchel of ${item}. Trusty supplies.`)
-              }
-              aria-label={item}
+              onClick={() => say("examine", item.examine)}
+              aria-label={item.name}
             >
-              <span aria-hidden="true">{abbreviate(item)}</span>
+              <span aria-hidden="true">{item.abbreviation}</span>
               <span className="rs-tooltip" role="presentation">
-                <strong>{item}</strong>
+                <strong>{item.name}</strong>
               </span>
             </button>
           </li>
@@ -134,18 +113,4 @@ export function EquipmentTab({
       </ul>
     </div>
   );
-}
-
-function abbreviate(value: string): string {
-  const clean = value
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/[^a-zA-Z0-9+#]/g, " ")
-    .trim();
-  const words = clean.split(/\s+/).filter(Boolean);
-
-  if (words.length >= 2) {
-    return `${words[0]![0] ?? ""}${words[1]![0] ?? ""}`.toUpperCase();
-  }
-
-  return clean.slice(0, 2).toUpperCase();
 }

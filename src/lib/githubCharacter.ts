@@ -1,3 +1,9 @@
+import {
+  buildEquipment,
+  type CharacterEquipment,
+  type EquipmentRepoInput
+} from "./equipment";
+
 export type GitHubUser = {
   login: string;
   name: string | null;
@@ -63,23 +69,6 @@ export type CharacterQuest = {
   difficulty: QuestDifficulty;
   difficultyScore: number;
   updatedLabel: string;
-};
-
-export type Rarity = "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary";
-
-export type EquipmentSlot = "Main hand" | "Off hand" | "Cape" | "Amulet" | "Ring";
-
-export type EquipmentItem = {
-  slot: EquipmentSlot;
-  name: string;
-  detail: string;
-  rarity: Rarity;
-  href?: string;
-};
-
-export type CharacterEquipment = {
-  items: EquipmentItem[];
-  backpack: string[];
 };
 
 export type Achievement = {
@@ -484,14 +473,18 @@ export function calculateCharacterSheet(
     totalLevel,
     combatLevel: calculateCombatLevel(skills),
     quests: getTopQuests(repos),
-    equipment: getEquipment(
-      repos,
-      metrics.accountAgeYears,
+    equipment: buildEquipment({
+      user: {
+        followers: user.followers,
+        publicGists: user.public_gists
+      },
+      repos: repos.map(toEquipmentRepo),
+      accountAgeYears: metrics.accountAgeYears,
       languageCounts,
       topicCounts,
       now,
       prestige
-    ),
+    }),
     languageCounts,
     topicCounts
   };
@@ -686,209 +679,6 @@ function getTopQuests(repos: GitHubRepo[]): CharacterQuest[] {
     }));
 }
 
-export function rarityFromThresholds(
-  value: number,
-  thresholds: [number, number, number, number]
-): Rarity {
-  const [uncommon, rare, epic, legendary] = thresholds;
-
-  if (value >= legendary) {
-    return "Legendary";
-  }
-
-  if (value >= epic) {
-    return "Epic";
-  }
-
-  if (value >= rare) {
-    return "Rare";
-  }
-
-  if (value >= uncommon) {
-    return "Uncommon";
-  }
-
-  return "Common";
-}
-
-export function getMainHandRarity(stars: number): Rarity {
-  return rarityFromThresholds(stars, [10, 50, 250, 1000]);
-}
-
-export function getOffHandRarity(forks: number): Rarity {
-  return rarityFromThresholds(forks, [5, 25, 100, 500]);
-}
-
-export function getCapeRarity(accountAgeYears: number): Rarity {
-  return rarityFromThresholds(accountAgeYears, [1, 2, 5, 10]);
-}
-
-export function getAmuletRarity(distinctLanguages: number): Rarity {
-  return rarityFromThresholds(distinctLanguages, [2, 4, 7, 10]);
-}
-
-export function getRingRarity(updatedAt: string, now: Date): Rarity {
-  const updatedTime = getTime(updatedAt);
-
-  if (updatedTime === 0) {
-    return "Common";
-  }
-
-  const daysSince = (now.getTime() - updatedTime) / (24 * 60 * 60 * 1000);
-
-  if (daysSince < 0) {
-    return "Common";
-  }
-
-  if (daysSince <= 7) {
-    return "Legendary";
-  }
-
-  if (daysSince <= 30) {
-    return "Epic";
-  }
-
-  if (daysSince <= 90) {
-    return "Rare";
-  }
-
-  if (daysSince <= 365) {
-    return "Uncommon";
-  }
-
-  return "Common";
-}
-
-function getEquipment(
-  repos: GitHubRepo[],
-  accountAgeYears: number,
-  languageCounts: Array<{ name: string; count: number }>,
-  topicCounts: Array<{ name: string; count: number }>,
-  now: Date,
-  prestige: Prestige
-): CharacterEquipment {
-  const mostStarred = maxRepo(repos, (repo) => repo.stargazers_count);
-  const mostForked = maxRepo(repos, (repo) => repo.forks_count);
-  const mostRecent = maxRepo(repos, (repo) => getTime(repo.updated_at));
-  const mostUsedLanguage = languageCounts[0];
-  const mergedSupplies = new Map<string, { name: string; count: number }>();
-
-  for (const item of [...languageCounts, ...topicCounts]) {
-    const key = item.name.toLowerCase();
-    const existing = mergedSupplies.get(key);
-
-    if (existing) {
-      existing.count += item.count;
-    } else {
-      mergedSupplies.set(key, { ...item });
-    }
-  }
-
-  const backpack = [...mergedSupplies.values()]
-    .sort((left, right) => {
-      if (right.count !== left.count) {
-        return right.count - left.count;
-      }
-
-      return left.name.localeCompare(right.name);
-    })
-    .slice(0, 6)
-    .map((item) => item.name);
-
-  const mainHand: EquipmentItem = mostStarred
-    ? {
-        slot: "Main hand",
-        name: `Blade of ${mostStarred.name}`,
-        detail:
-          mostStarred.stargazers_count > 0
-            ? `${pluralize(mostStarred.stargazers_count, "star")} — most starred work`
-            : "Freshly forged, awaiting its first star",
-        rarity: getMainHandRarity(mostStarred.stargazers_count),
-        href: mostStarred.html_url
-      }
-    : {
-        slot: "Main hand",
-        name: "Empty scabbard",
-        detail: "No public repository to forge a blade from",
-        rarity: "Common"
-      };
-
-  const offHand: EquipmentItem = mostForked
-    ? {
-        slot: "Off hand",
-        name: `Aegis of ${mostForked.name}`,
-        detail:
-          mostForked.forks_count > 0
-            ? `${pluralize(mostForked.forks_count, "fork")} — most forked work`
-            : "Unscarred, awaiting its first fork",
-        rarity: getOffHandRarity(mostForked.forks_count),
-        href: mostForked.html_url
-      }
-    : {
-        slot: "Off hand",
-        name: "Bare arm",
-        detail: "No forked work to raise as a shield",
-        rarity: "Common"
-      };
-
-  const cape: EquipmentItem = prestige.capeSkill
-    ? {
-        slot: "Cape",
-        name: `${prestige.capeSkill} Skillcape${prestige.trimmed ? " (t)" : ""}`,
-        detail: prestige.trimmed
-          ? `Earned at level 99 ${prestige.capeSkill}, trimmed by a second mastery`
-          : `Earned at level 99 ${prestige.capeSkill}`,
-        rarity: "Legendary"
-      }
-    : {
-        slot: "Cape",
-        name: getAccountAgeCape(accountAgeYears),
-        detail:
-          accountAgeYears >= 1
-            ? `Woven over ${Math.floor(accountAgeYears).toLocaleString()} year${
-                Math.floor(accountAgeYears) === 1 ? "" : "s"
-              } of service`
-            : "Freshly woven this very year",
-        rarity: getCapeRarity(accountAgeYears)
-      };
-
-  const amulet: EquipmentItem = mostUsedLanguage
-    ? {
-        slot: "Amulet",
-        name: `${mostUsedLanguage.name} Amulet`,
-        detail: `Attuned through ${mostUsedLanguage.count.toLocaleString()} ${
-          mostUsedLanguage.count === 1 ? "repository" : "repositories"
-        }`,
-        rarity: getAmuletRarity(languageCounts.length)
-      }
-    : {
-        slot: "Amulet",
-        name: "Unattuned Amulet",
-        detail: "No dominant tongue detected",
-        rarity: "Common"
-      };
-
-  const ring: EquipmentItem = mostRecent
-    ? {
-        slot: "Ring",
-        name: `Signet of ${mostRecent.name}`,
-        detail: `Last touched ${formatDate(mostRecent.updated_at)}`,
-        rarity: getRingRarity(mostRecent.updated_at, now),
-        href: mostRecent.html_url
-      }
-    : {
-        slot: "Ring",
-        name: "Bare finger",
-        detail: "No recent work to seal",
-        rarity: "Common"
-      };
-
-  return {
-    items: [mainHand, offHand, cape, amulet, ring],
-    backpack: backpack.length > 0 ? backpack : ["No supplies discovered"]
-  };
-}
-
 export function getAchievements(
   user: Pick<GitHubUser, "followers">,
   metrics: RepositoryMetrics
@@ -1034,22 +824,6 @@ function getStrongestSkill(
   );
 }
 
-function getAccountAgeCape(accountAgeYears: number): string {
-  if (accountAgeYears >= 10) {
-    return "Ancient Account Cape";
-  }
-
-  if (accountAgeYears >= 5) {
-    return "Veteran Account Cape";
-  }
-
-  if (accountAgeYears >= 1) {
-    return "Adventurer Account Cape";
-  }
-
-  return "Fresh Account Cape";
-}
-
 function getTopCounts(values: string[]): Array<{ name: string; count: number }> {
   const counts = new Map<string, number>();
 
@@ -1073,36 +847,32 @@ function getTopCounts(values: string[]): Array<{ name: string; count: number }> 
     });
 }
 
-function pluralize(count: number, noun: string): string {
-  return `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
-}
-
 function getRepoTopics(repo: GitHubRepo): string[] {
   return Array.isArray(repo.topics) ? repo.topics.filter(Boolean) : [];
 }
 
-function sum<T>(items: T[], selector: (item: T) => number): number {
-  return items.reduce((total, item) => total + selector(item), 0);
+function toEquipmentRepo(repo: GitHubRepo): EquipmentRepoInput {
+  return {
+    name: repo.name,
+    fullName: repo.full_name,
+    htmlUrl: repo.html_url,
+    stars: repo.stargazers_count,
+    forks: repo.forks_count,
+    updatedAt: repo.updated_at,
+    topics: getRepoTopics(repo),
+    sizeKb: repo.size,
+    openIssuesCount: repo.open_issues_count,
+    createdAt: repo.created_at,
+    pushedAt: repo.pushed_at,
+    licenseSpdxId: repo.license?.spdx_id ?? null,
+    archived: repo.archived,
+    isTemplate: repo.is_template,
+    fork: repo.fork
+  };
 }
 
-function maxRepo(
-  repos: GitHubRepo[],
-  selector: (repo: GitHubRepo) => number
-): GitHubRepo | undefined {
-  return repos.reduce<GitHubRepo | undefined>((best, repo) => {
-    if (!best) {
-      return repo;
-    }
-
-    const score = selector(repo);
-    const bestScore = selector(best);
-
-    if (score !== bestScore) {
-      return score > bestScore ? repo : best;
-    }
-
-    return getTime(repo.updated_at) > getTime(best.updated_at) ? repo : best;
-  }, undefined);
+function sum<T>(items: T[], selector: (item: T) => number): number {
+  return items.reduce((total, item) => total + selector(item), 0);
 }
 
 function getTime(dateValue: string): number {
