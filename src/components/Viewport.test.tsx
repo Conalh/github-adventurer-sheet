@@ -33,10 +33,13 @@ describe("Viewport", () => {
       <Viewport sheet={fixture} say={() => undefined} />,
     );
 
-    expect(markup).toContain('class="inn-back-wall"');
-    expect(markup).toContain('class="inn-hearth"');
-    expect(markup).toContain('class="inn-floor"');
+    expect(markup).toContain('class="inn-room"');
+    expect(markup).toContain('class="inn-central-rug"');
+    expect(markup).toContain('class="inn-counter"');
     expect(markup).toContain('class="trophy-wall"');
+    expect(markup).not.toContain('class="inn-back-wall"');
+    expect(markup).not.toContain('class="inn-stonework"');
+    expect(markup).not.toContain('class="inn-banner');
     expect(markup).not.toContain('class="scene-hills"');
     expect(markup).not.toContain('class="scene-tree');
   });

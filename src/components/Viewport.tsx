@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { skillXpFromScore, type CharacterSheet } from "../lib/githubCharacter";
 import type { ChatMessage } from "./Chatbox";
 import { CrownIcon, HeartIcon, SunburstIcon } from "./icons";
+import { InnRoom } from "./InnRoom";
 import { SkillcapeArt } from "./SkillcapeArt";
 import { TrophyWall } from "./TrophyWall";
 
@@ -48,20 +49,8 @@ export function Viewport({
       className={grandmaster ? "viewport grandmaster" : "viewport"}
       aria-label="Character scene"
     >
-      <div className="inn-back-wall" aria-hidden="true">
-        <span className="inn-stonework" />
-        <span className="inn-beam beam-left" />
-        <span className="inn-beam beam-right" />
-        <span className="inn-beam beam-top" />
-        <span className="inn-banner banner-left" />
-        <span className="inn-banner banner-right" />
-      </div>
+      <InnRoom />
       <TrophyWall displays={sheet.trophyRoom.displays} />
-      <span className="inn-hearth" aria-hidden="true">
-        <i className="hearth-mantle" />
-        <i className="hearth-fire" />
-      </span>
-      <div className="inn-floor" aria-hidden="true" />
 
       <div className="status-orbs">
         <div
