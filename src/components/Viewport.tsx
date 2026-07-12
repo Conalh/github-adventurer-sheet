@@ -1,7 +1,8 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { skillXpFromScore, type CharacterSheet } from "../lib/githubCharacter";
 import type { ChatMessage } from "./Chatbox";
-import { CrownIcon, HeartIcon, SunburstIcon, SKILL_COLORS } from "./icons";
+import { CrownIcon, HeartIcon, SunburstIcon } from "./icons";
+import { SkillcapeArt } from "./SkillcapeArt";
 import { TrophyWall } from "./TrophyWall";
 
 export function Viewport({
@@ -103,19 +104,12 @@ export function Viewport({
         >
           <span className="player-portrait">
             {prestige.capeSkill ? (
-              <span
-                className={
-                  prestige.trimmed ? "skillcape trimmed" : "skillcape"
-                }
-                style={
-                  {
-                    "--cape-color": SKILL_COLORS[prestige.capeSkill]
-                  } as CSSProperties
-                }
-                aria-hidden="true"
-              >
-                <i className="cape-trim" />
-                <i className="cape-main" />
+              <span className={prestige.trimmed ? "skillcape trimmed" : "skillcape"} aria-hidden="true">
+                <SkillcapeArt
+                  skill={prestige.capeSkill}
+                  trimmed={prestige.trimmed}
+                  variant="worn"
+                />
               </span>
             ) : null}
             {sheet.user.avatar_url ? (

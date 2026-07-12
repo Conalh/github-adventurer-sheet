@@ -1,6 +1,6 @@
-import type { CSSProperties } from "react";
 import type { WallDisplay, WallZone } from "../lib/trophyRoom";
-import { SKILL_COLORS } from "./icons";
+import { SkillcapeArt } from "./SkillcapeArt";
+import { TrophyArt } from "./TrophyArt";
 
 type TrophyWallProps = {
   displays: WallDisplay[];
@@ -26,11 +26,19 @@ export function TrophyWall({ displays }: TrophyWallProps) {
                   aria-label={`${display.name}. ${display.evidence}. ${display.description}`}
                   data-display-id={display.id}
                   data-equipped={display.equipped || undefined}
-                  style={display.skill
-                    ? { "--display-color": SKILL_COLORS[display.skill] } as CSSProperties
-                    : undefined}
                 >
-                  <span className="wall-display-art" aria-hidden="true" />
+                  {display.kind === "cape" && display.skill ? (
+                    <SkillcapeArt
+                      skill={display.skill}
+                      trimmed={display.trimmed}
+                      variant="wall"
+                    />
+                  ) : (
+                    <TrophyArt
+                      displayId={display.id}
+                      material={display.material ?? "Bronze"}
+                    />
+                  )}
                   <span className="wall-display-tooltip" role="tooltip">
                     <strong>{display.material ? `${display.material} ${display.name}` : display.name}</strong>
                     <span>{display.evidence}</span>

@@ -48,6 +48,16 @@ describe("Viewport", () => {
     expect(source).not.toContain("meadow");
   });
 
+  it("uses the illustrated garment for the equipped cape", () => {
+    const markup = renderToStaticMarkup(
+      <Viewport sheet={fixture} say={() => undefined} />,
+    );
+
+    expect(markup).toContain("skillcape-art--worn");
+    expect(markup).toContain('data-skill="Strength"');
+    expect(markup.match(/skillcape-art__garment/g)).toHaveLength(1);
+  });
+
   it("keeps the nameplate in front of the worn skillcape", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
 
