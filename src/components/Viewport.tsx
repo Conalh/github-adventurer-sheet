@@ -143,7 +143,7 @@ export function Viewport({
               onClick={() =>
                 chooseOption([
                   "game",
-                  "You walk to the other side of the meadow. The commit history follows you."
+                  "You cross to the other side of the inn. The commit history follows you."
                 ])
               }
             >

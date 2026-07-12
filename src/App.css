@@ -593,6 +593,15 @@ p {
 .wall-zone.trophy-shelf::after { content: ""; position: absolute; right: 0; bottom: 2px; left: 0; height: 12px; background: #5b351d; box-shadow: 0 4px 0 #23130b; }
 .wall-display.trophy[data-display-id="trophy:veteran"] .wall-display-art { clip-path: inset(10% 5% 20%); }
 
+@media (min-width: 941px) {
+  .trophy-wall {
+    right: 3%;
+    left: 3%;
+    grid-template-columns: minmax(260px, 300px) minmax(260px, 300px);
+    justify-content: space-between;
+  }
+}
+
 .player {
   position: relative;
   z-index: 10;

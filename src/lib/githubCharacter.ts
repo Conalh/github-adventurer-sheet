@@ -524,7 +524,7 @@ export async function getGitHubCharacter(
 }
 
 export function getCharacterCacheKey(username: string): string {
-  return `github-character:v5:${username}`;
+  return `github-character:v6:${username}`;
 }
 
 async function fetchRepos(

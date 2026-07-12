@@ -41,6 +41,13 @@ describe("Viewport", () => {
     expect(markup).not.toContain('class="scene-tree');
   });
 
+  it("uses inn-appropriate copy for the walk action", () => {
+    const source = readFileSync(new URL("./Viewport.tsx", import.meta.url), "utf8");
+
+    expect(source).toContain("You cross to the other side of the inn.");
+    expect(source).not.toContain("meadow");
+  });
+
   it("keeps the nameplate in front of the worn skillcape", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
 

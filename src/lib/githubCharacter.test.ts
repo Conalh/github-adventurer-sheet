@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   calculateCharacterSheet,
   clampCombatLevel,
   getAchievements,
+  getGitHubCharacter,
   getCharacterCacheKey,
   getPrestige,
   getQuestDifficulty,
@@ -68,8 +69,34 @@ function repo(overrides: Partial<GitHubRepo>): GitHubRepo {
 }
 
 describe("character cache key", () => {
-  it("uses the v5 namespace for typed inventory records", () => {
-    expect(getCharacterCacheKey("ConalH")).toBe("github-character:v5:ConalH");
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("uses the v6 namespace for trophy-room character records", () => {
+    expect(getCharacterCacheKey("ConalH")).toBe("github-character:v6:ConalH");
+  });
+
+  it("does not return an unexpired v5 record that lacks trophyRoom", async () => {
+    const values = new Map<string, string>([[
+      "github-character:v5:ConalH",
+      JSON.stringify({ createdAt: Date.now(), data: { user: { login: "stale-v5" } } }),
+    ]]);
+    vi.stubGlobal("window", { localStorage: {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    } });
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => new Response(
+      url.includes("/repos?") ? "[]" : JSON.stringify(baseUser),
+      { status: 200, headers: { "content-type": "application/json" } },
+    )));
+
+    const result = await getGitHubCharacter("ConalH", { now: new Date("2026-07-12T00:00:00Z") });
+    const cachedResult = await getGitHubCharacter("ConalH", { now: new Date("2026-07-12T00:00:00Z") });
+
+    expect(result.user.login).toBe("ConalH");
+    expect(result.trophyRoom.displays).toBeInstanceOf(Array);
+    expect(cachedResult).toBe(result);
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
 
