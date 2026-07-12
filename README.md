@@ -1,51 +1,48 @@
 # GitHub Adventurer Sheet
 
-GitHub Adventurer Sheet turns any public GitHub profile into an original fantasy
-RPG character page — a gilded trading card, ten skills, rarity-tiered relics, a
-hall of achievements, and a quest log, all computed deterministically from real
-public data.
+Enter thy GitHub name to play.
 
-## Features
+GitHub Adventurer Sheet renders any public GitHub profile as an old-school
+MMO character — inside a loving, fan-made parody of the classic RuneScape
+game client. Stone-framed game window, a skills tab with `58/99` cells and
+authentic experience numbers, a worn-equipment cross, a quest journal on
+parchment, a deed diary, and a chatbox that congratulates you on your level.
 
-- **Adventurer trading card** — combat level, total level, class, and primary
-  stats on a gold parchment card with an ambient foil sheen and a subtle 3D
-  tilt that follows the pointer.
-- **Ten skills (1–99)** — Attack, Strength, Defence, Ranged, Magic, Crafting,
-  Mining, Smithing, Prayer, and Hitpoints, each derived from a different
-  signal in the profile (original repos, stars earned, account age, languages
-  spoken, and so on). Skills at 99 glow.
-- **Equipment with rarity tiers** — the most starred work becomes a Blade, the
-  most forked an Aegis, the most recent a Signet, plus a Cape woven from
-  account age and an Amulet attuned to the dominant language. Every relic is
-  rated Common → Uncommon → Rare → Epic → Legendary.
-- **Hall of Deeds** — fourteen achievements (Starfall, Polyglot, Fork Lord,
-  Keeper of the Flame, …) with earned/locked medallions and live progress
-  bars.
-- **Quest log** — top repositories ranked by stars, forks, and recency, with
-  difficulty gems from Novice to Master and per-language colors.
-- **Shareable routes** — every character lives at `/character/{username}`, and
-  a Share button copies the link.
+Every number is computed deterministically from real public data: the same
+profile always rolls the same hero.
 
-Everything is deterministic: the same profile always rolls the same hero.
+## The client
+
+- **Viewport** — your avatar standing in a dusk meadow, pixelated like a
+  game character, with your bio as overhead chat, your name and combat level
+  in right-click-menu style, and a decorative minimap.
+- **Skills tab** — ten skills (Attack, Strength, Defence, Ranged, Magic,
+  Crafting, Mining, Smithing, Prayer, Hitpoints), each levelled 1–99 from a
+  different signal in the profile (original repos, stars earned, account
+  age, languages, followers, …). Hovering a skill shows its experience on
+  the *genuine* RuneScape XP table — level 99 is exactly 13,034,431 XP —
+  and clicking reports it to the chatbox.
+- **Worn equipment** — your most starred repo becomes a Blade, your most
+  forked an Aegis, your most recent a Signet, plus a Cape woven from account
+  age and an Amulet attuned to your dominant language. Rarities run Common →
+  Legendary; legendary items glow. Click anything to examine it.
+- **Quest journal** — top repositories as quests with difficulty colours and
+  quest points; opening one unrolls a parchment journal page.
+- **Deed diary** — fourteen achievements in diary style: green and ticked
+  when complete, red with live progress when not.
+- **Chatbox** — welcome message, level-up congratulations, deed broadcasts,
+  and examine text. The Share button copies a link to the sheet.
+
+Character pages live at `/character/{username}` and are shareable.
 
 ## Use
-
-Run the app locally:
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open the printed local URL, then enter either a GitHub username or a GitHub
-profile URL.
-
-Example route:
-
-```text
-/character/ConalH
-```
-
+Open the printed local URL, then enter a GitHub username or profile URL.
 Accepted inputs include:
 
 ```text
@@ -56,10 +53,10 @@ https://github.com/ConalH
 https://www.github.com/ConalH
 ```
 
-`ConalH` is used only as the default demo profile. Any valid public GitHub
-username can be loaded.
+`ConalH` is only the default demo profile. Any valid public GitHub username
+can be summoned.
 
-## Data Source
+## Data source
 
 The app uses the public GitHub REST API:
 
@@ -69,21 +66,22 @@ GET https://api.github.com/users/{username}/repos?per_page=100&sort=updated
 ```
 
 Repository pagination is handled up to 300 repositories, and results are
-cached in `localStorage` for ten minutes. The app does not scrape GitHub HTML
-and does not require login.
+cached in `localStorage` for ten minutes. No scraping, no login, no
+tracking.
 
-This is a browser-only app, so it does not read `GITHUB_TOKEN`. Shipping a
-token in frontend code would expose it to users. A server-side proxy could add
-optional `GITHUB_TOKEN` support later if higher rate limits become necessary.
+This is a browser-only app, so it does not read `GITHUB_TOKEN` — shipping a
+token in frontend code would expose it. A server-side proxy could add
+optional token support later if rate limits become a problem.
 
-## Styling Note
+## Parody & assets note
 
-The character page is RuneScape-inspired in the broad fantasy RPG sense, but
-it uses original CSS, layout, colors, and browser-rendered UI. Typefaces
-(Cinzel, Cinzel Decorative, Alegreya) are bundled from open-license Fontsource
-packages; every icon is hand-drawn inline SVG. It does not include RuneScape
-logos, sprites, fonts, icons, or ripped assets. Ambient animation honors
-`prefers-reduced-motion`.
+This is a fan-made parody. It is not affiliated with, endorsed by, or
+connected to Jagex or RuneScape in any way. **No game assets are used**:
+every panel, border, icon, and scene is original CSS and hand-drawn inline
+SVG, and the typefaces are open-licensed lookalikes — Pixelify Sans for UI
+text, Jacquard 12 for the wordmark, and a digits-only subset of VT323
+(bundled in `src/assets`, OFL license alongside) so that stats stay
+legible. The experience table formula is the community-documented curve.
 
 ## Test
 
@@ -93,5 +91,6 @@ npm run build
 ```
 
 Unit tests cover username/profile URL parsing, level scaling and clamping,
-combat level clamping, quest difficulty mapping, equipment naming and rarity
-tiers, achievement progress, and missing repository fields.
+the RuneScape experience table, score-to-XP interpolation, combat level
+clamping, quest difficulty mapping, equipment naming and rarity tiers,
+achievement progress, and missing repository fields.

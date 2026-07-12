@@ -37,9 +37,8 @@ export function SwordIcon(props: IconProps) {
 export function FistIcon(props: IconProps) {
   return (
     <Icon {...props}>
-      <rect x="5.5" y="6.5" width="13" height="11.5" rx="3" />
-      <path d="M8.9 6.5v3.6M12 6.5v3.6M15.1 6.5v3.6" />
-      <path d="M5.5 14h5.5" />
+      <path d="M4 18.5c-.9 0-1.6-.8-1.5-1.7C3 11.6 6.8 8 11.4 8h.5l.9-3.2a1.8 1.8 0 0 1 3.5 1l-.8 2.8c3.2.7 5.5 3.3 5.5 6.6 0 .7-.6 1.3-1.3 1.3h-4.4c-2.2 0-3.5 1-4.2 2z" />
+      <path d="M12.8 8.4l-1 3.6" />
     </Icon>
   );
 }
@@ -327,6 +326,80 @@ export function CheckIcon(props: IconProps) {
   return (
     <Icon {...props}>
       <path d="M4.5 12.5l5 5 10-11" />
+    </Icon>
+  );
+}
+
+export function CrossedSwordsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 3.5L18.5 17" />
+      <path d="M19 3.5L5.5 17" />
+      <path d="M3.5 15l2-.5 3 3-.5 2-2.5.5-2.5-2.5z" />
+      <path d="M20.5 15l-2-.5-3 3 .5 2 2.5.5 2.5-2.5z" />
+    </Icon>
+  );
+}
+
+export function BarChartIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4.5 20.5v-6h4v6z" />
+      <path d="M10 20.5v-11h4v11z" />
+      <path d="M15.5 20.5v-16h4v16z" />
+      <path d="M3 20.5h18.5" />
+    </Icon>
+  );
+}
+
+export function HelmetIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 13v-2a7 7 0 0 1 14 0v2l-1.5 6H16l-1-4h-6l-1 4H6.5z" />
+      <path d="M9.5 13h5" />
+    </Icon>
+  );
+}
+
+export function TorsoIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 4l4 2 4-2 3.5 3.5-2.5 3-1-.8V20H8v-10.3l-1 .8-2.5-3z" />
+    </Icon>
+  );
+}
+
+export function LegsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 4h10l1 16h-5l-1-9-1 9H6z" />
+    </Icon>
+  );
+}
+
+export function GlovesIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 20V9.5a4 4 0 0 1 8 0V20z" />
+      <path d="M8 13H5.8a1.6 1.6 0 0 1 0-3.2H8" />
+    </Icon>
+  );
+}
+
+export function BootsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 4h6v7c3 1 7 3 7 6v3H4v-9z" />
+      <path d="M13 11H7" />
+    </Icon>
+  );
+}
+
+export function ArrowsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 3v13M7 21v-2M5 17h4l-2 4z" />
+      <path d="M17 3v13M17 21v-2M15 17h4l-2 4z" />
     </Icon>
   );
 }

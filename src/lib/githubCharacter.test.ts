@@ -12,6 +12,9 @@ import {
   levelFromScore,
   parseGitHubUsername,
   rarityFromThresholds,
+  rsXpForLevel,
+  skillXpFromScore,
+  SKILL_NAMES,
   type EquipmentItem,
   type GitHubRepo,
   type GitHubUser
@@ -90,6 +93,42 @@ describe("levelFromScore", () => {
   });
 });
 
+describe("rsXpForLevel", () => {
+  it("matches the authentic RuneScape experience table", () => {
+    expect(rsXpForLevel(1)).toBe(0);
+    expect(rsXpForLevel(2)).toBe(83);
+    expect(rsXpForLevel(10)).toBe(1154);
+    expect(rsXpForLevel(50)).toBe(101333);
+    expect(rsXpForLevel(92)).toBe(6517253);
+    expect(rsXpForLevel(99)).toBe(13034431);
+  });
+
+  it("clamps out-of-range levels", () => {
+    expect(rsXpForLevel(0)).toBe(0);
+    expect(rsXpForLevel(150)).toBe(13034431);
+  });
+});
+
+describe("skillXpFromScore", () => {
+  it("is monotonic and stays within level xp bounds", () => {
+    let previous = 0;
+
+    for (const score of [0, 1, 5, 9, 10, 50, 99, 100, 500, 10 ** 8]) {
+      const xp = skillXpFromScore(score);
+      const level = levelFromScore(score);
+      expect(xp).toBeGreaterThanOrEqual(previous);
+      expect(xp).toBeGreaterThanOrEqual(rsXpForLevel(level));
+      expect(xp).toBeLessThanOrEqual(rsXpForLevel(Math.min(99, level + 1)));
+      previous = xp;
+    }
+  });
+
+  it("caps at the level-99 experience", () => {
+    expect(skillXpFromScore(10 ** 9)).toBe(13034431);
+    expect(skillXpFromScore(Number.NaN)).toBe(0);
+  });
+});
+
 describe("combat level", () => {
   it("clamps combat level to the requested bounds", () => {
     expect(clampCombatLevel(-20)).toBe(3);
@@ -152,6 +191,10 @@ describe("calculateCharacterSheet", () => {
     expect(sheet.totalLevel).toBe(
       Object.values(sheet.skills).reduce((total, level) => total + level, 0)
     );
+
+    for (const skill of SKILL_NAMES) {
+      expect(sheet.skills[skill]).toBe(levelFromScore(sheet.skillScores[skill]));
+    }
   });
 
   it("handles empty and missing repository fields without fake repo data", () => {

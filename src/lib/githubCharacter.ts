@@ -106,6 +106,7 @@ export type CharacterSheet = {
   repos: GitHubRepo[];
   metrics: RepositoryMetrics;
   skills: Record<SkillName, number>;
+  skillScores: Record<SkillName, number>;
   strongestSkill: Exclude<SkillName, "Hitpoints">;
   characterClass: string;
   totalLevel: number;
@@ -262,6 +263,56 @@ export function levelFromScore(score: number): number {
   return Math.max(1, Math.min(99, level));
 }
 
+const MAX_LEVEL = 99;
+
+/**
+ * The genuine old-school RuneScape experience table:
+ * xp(L) = floor( (1/4) * sum_{n=1}^{L-1} floor(n + 300 * 2^(n/7)) ).
+ * Level 2 = 83 xp, level 99 = 13,034,431 xp.
+ */
+export function rsXpForLevel(level: number): number {
+  const clamped = Math.max(1, Math.min(MAX_LEVEL, Math.floor(level)));
+  let points = 0;
+
+  for (let n = 1; n < clamped; n += 1) {
+    points += Math.floor(n + 300 * 2 ** (n / 7));
+  }
+
+  return Math.floor(points / 4);
+}
+
+function minScoreForLevel(level: number): number {
+  if (level <= 1) {
+    return 0;
+  }
+
+  return Math.max(0, 10 ** ((level - 1) / 24) - 1);
+}
+
+/**
+ * Maps a raw skill score onto the authentic RuneScape xp scale by
+ * interpolating between the xp thresholds of the current and next level.
+ * Deterministic, monotonic in score, and capped at the level-99 xp.
+ */
+export function skillXpFromScore(score: number): number {
+  const safeScore = Number.isFinite(score) ? Math.max(0, score) : 0;
+  const level = levelFromScore(safeScore);
+
+  if (level >= MAX_LEVEL) {
+    return rsXpForLevel(MAX_LEVEL);
+  }
+
+  const floorScore = minScoreForLevel(level);
+  const ceilScore = minScoreForLevel(level + 1);
+  const span = ceilScore - floorScore;
+  const fraction =
+    span > 0 ? Math.min(1, Math.max(0, (safeScore - floorScore) / span)) : 0;
+  const xpFloor = rsXpForLevel(level);
+  const xpCeil = rsXpForLevel(level + 1);
+
+  return Math.floor(xpFloor + fraction * (xpCeil - xpFloor));
+}
+
 export function getQuestDifficulty(repo: Pick<GitHubRepo, "stargazers_count" | "forks_count">): QuestDifficulty {
   const difficultyScore = repo.stargazers_count * 2 + repo.forks_count * 3;
 
@@ -318,41 +369,35 @@ export function calculateCharacterSheet(
 ): CharacterSheet {
   const metrics = getRepositoryMetrics(user, repos, now);
 
-  const attack = levelFromScore(metrics.originalRepos * 8 + metrics.totalRepos);
-  const strength = levelFromScore(
-    metrics.totalStars * 6 + metrics.totalForksReceived * 3
-  );
-  const defence = levelFromScore(
-    metrics.accountAgeYears * 40 + metrics.archivedRepos * 8
-  );
-  const ranged = levelFromScore(
-    metrics.totalForksReceived * 4 + metrics.totalWatchers * 2
-  );
-  const magic = levelFromScore(metrics.distinctLanguages * 25 + metrics.uniqueTopics * 2);
-  const crafting = levelFromScore(
-    metrics.describedRepos * 6 + metrics.homepageRepos * 12 + metrics.uniqueTopics * 3
-  );
-  const mining = levelFromScore(metrics.totalRepos * 6 + metrics.forksMade * 3);
-  const smithing = levelFromScore(
-    metrics.originalRepos * 10 + metrics.recentlyUpdatedRepos * 10
-  );
-  const prayer = levelFromScore(user.followers * 3 + user.following);
-  const hitpoints = levelFromScore(
-    (attack + strength + defence + ranged + magic) * 4
-  );
-
-  const skills: Record<SkillName, number> = {
-    Attack: attack,
-    Strength: strength,
-    Defence: defence,
-    Ranged: ranged,
-    Magic: magic,
-    Crafting: crafting,
-    Mining: mining,
-    Smithing: smithing,
-    Prayer: prayer,
-    Hitpoints: hitpoints
+  const combatScores = {
+    Attack: metrics.originalRepos * 8 + metrics.totalRepos,
+    Strength: metrics.totalStars * 6 + metrics.totalForksReceived * 3,
+    Defence: metrics.accountAgeYears * 40 + metrics.archivedRepos * 8,
+    Ranged: metrics.totalForksReceived * 4 + metrics.totalWatchers * 2,
+    Magic: metrics.distinctLanguages * 25 + metrics.uniqueTopics * 2
   };
+
+  const skillScores: Record<SkillName, number> = {
+    ...combatScores,
+    Crafting:
+      metrics.describedRepos * 6 +
+      metrics.homepageRepos * 12 +
+      metrics.uniqueTopics * 3,
+    Mining: metrics.totalRepos * 6 + metrics.forksMade * 3,
+    Smithing: metrics.originalRepos * 10 + metrics.recentlyUpdatedRepos * 10,
+    Prayer: user.followers * 3 + user.following,
+    Hitpoints:
+      (levelFromScore(combatScores.Attack) +
+        levelFromScore(combatScores.Strength) +
+        levelFromScore(combatScores.Defence) +
+        levelFromScore(combatScores.Ranged) +
+        levelFromScore(combatScores.Magic)) *
+      4
+  };
+
+  const skills = Object.fromEntries(
+    SKILL_NAMES.map((skill) => [skill, levelFromScore(skillScores[skill])])
+  ) as Record<SkillName, number>;
 
   const strongestSkill = getStrongestSkill(skills);
   const languageCounts = getTopCounts(
@@ -367,6 +412,7 @@ export function calculateCharacterSheet(
     repos,
     metrics,
     skills,
+    skillScores,
     strongestSkill,
     characterClass: CLASS_BY_SKILL[strongestSkill],
     totalLevel: SKILL_NAMES.reduce((sum, skill) => sum + skills[skill], 0),
@@ -401,7 +447,7 @@ export async function getGitHubCharacter(
 }
 
 export function getCharacterCacheKey(username: string): string {
-  return `github-character:v2:${username}`;
+  return `github-character:v3:${username}`;
 }
 
 async function fetchRepos(
@@ -651,7 +697,20 @@ function getEquipment(
   const mostForked = maxRepo(repos, (repo) => repo.forks_count);
   const mostRecent = maxRepo(repos, (repo) => getTime(repo.updated_at));
   const mostUsedLanguage = languageCounts[0];
-  const backpack = [...languageCounts, ...topicCounts]
+  const mergedSupplies = new Map<string, { name: string; count: number }>();
+
+  for (const item of [...languageCounts, ...topicCounts]) {
+    const key = item.name.toLowerCase();
+    const existing = mergedSupplies.get(key);
+
+    if (existing) {
+      existing.count += item.count;
+    } else {
+      mergedSupplies.set(key, { ...item });
+    }
+  }
+
+  const backpack = [...mergedSupplies.values()]
     .sort((left, right) => {
       if (right.count !== left.count) {
         return right.count - left.count;
