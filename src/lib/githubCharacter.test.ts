@@ -413,6 +413,23 @@ describe("getPrestige", () => {
 });
 
 describe("skillcape equipment", () => {
+  it("attaches earned wall displays without making additional requests", () => {
+    const sheet = calculateCharacterSheet(
+      { ...baseUser, followers: 1_000, created_at: "2016-07-12T00:00:00Z" },
+      [repo({ fork: false, stargazers_count: 100, forks_count: 10 })],
+      new Date("2026-07-12T00:00:00Z")
+    );
+
+    expect(sheet.trophyRoom.displays.map((item) => item.id)).toEqual(
+      expect.arrayContaining([
+        "trophy:stars",
+        "trophy:followers",
+        "trophy:forks",
+        "trophy:veteran"
+      ])
+    );
+  });
+
   it("replaces the account cape with a trimmed skillcape for multi-99 heroes", () => {
     const sheet = calculateCharacterSheet(
       { ...baseUser, followers: 400_000 },
