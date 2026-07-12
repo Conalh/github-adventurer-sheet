@@ -188,6 +188,22 @@ function maxRepo(
   )[0];
 }
 
+function legacyMaxRepo(
+  repos: EquipmentRepoInput[],
+  score: (repo: EquipmentRepoInput) => number,
+  breakTiesByUpdatedAt = false
+): EquipmentRepoInput | undefined {
+  return repos.reduce<EquipmentRepoInput | undefined>((best, repo) => {
+    if (!best || score(repo) > score(best)) return repo;
+    if (
+      breakTiesByUpdatedAt &&
+      score(repo) === score(best) &&
+      getTime(repo.updatedAt) > getTime(best.updatedAt)
+    ) return repo;
+    return best;
+  }, undefined);
+}
+
 function pluralize(count: number, noun: string): string {
   return `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
 }
@@ -349,9 +365,9 @@ function formatSize(sizeKb: number): string {
 
 export function buildEquipment(input: EquipmentInput): CharacterEquipment {
   const repos = input.repos;
-  const mostStarred = maxRepo(repos, (repo) => normaliseCount(repo.stars));
-  const mostForked = maxRepo(repos, (repo) => normaliseCount(repo.forks));
-  const mostRecent = maxRepo(repos, (repo) => getTime(repo.updatedAt));
+  const mostStarred = legacyMaxRepo(repos, (repo) => normaliseCount(repo.stars), true);
+  const mostForked = legacyMaxRepo(repos, (repo) => normaliseCount(repo.forks), true);
+  const mostRecent = legacyMaxRepo(repos, (repo) => getTime(repo.updatedAt));
   const mostUsedLanguage = [...input.languageCounts].sort(
     (a, b) => normaliseCount(b.count) - normaliseCount(a.count) || a.name.localeCompare(b.name)
   )[0];

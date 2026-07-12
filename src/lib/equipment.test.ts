@@ -75,14 +75,57 @@ describe("equipment foundations", () => {
     expect(normaliseCount(value)).toBe(expected);
   });
 
-  it("maps every new slot at and below its first threshold", () => {
-    expect(rarityFromThresholds(1, [2, 4, 8, 15])).toBe("Common");
-    expect(getHeadRarity(2)).toBe("Uncommon");
-    expect(getBodyRarity(10)).toBe("Rare");
-    expect(getLegsRarity(6)).toBe("Epic");
-    expect(getHandsRarity(500)).toBe("Legendary");
-    expect(getFeetRarity(15)).toBe("Epic");
-    expect(getAmmoRarity(1)).toBe("Uncommon");
+  it.each([
+    ["Head", getHeadRarity, 1, "Common"],
+    ["Head", getHeadRarity, 2, "Uncommon"],
+    ["Head", getHeadRarity, 3, "Uncommon"],
+    ["Head", getHeadRarity, 4, "Rare"],
+    ["Head", getHeadRarity, 7, "Rare"],
+    ["Head", getHeadRarity, 8, "Epic"],
+    ["Head", getHeadRarity, 14, "Epic"],
+    ["Head", getHeadRarity, 15, "Legendary"],
+    ["Body", getBodyRarity, 0, "Common"],
+    ["Body", getBodyRarity, 1, "Uncommon"],
+    ["Body", getBodyRarity, 9, "Uncommon"],
+    ["Body", getBodyRarity, 10, "Rare"],
+    ["Body", getBodyRarity, 99, "Rare"],
+    ["Body", getBodyRarity, 100, "Epic"],
+    ["Body", getBodyRarity, 999, "Epic"],
+    ["Body", getBodyRarity, 1000, "Legendary"],
+    ["Legs", getLegsRarity, 0, "Common"],
+    ["Legs", getLegsRarity, 1, "Uncommon"],
+    ["Legs", getLegsRarity, 2, "Uncommon"],
+    ["Legs", getLegsRarity, 3, "Rare"],
+    ["Legs", getLegsRarity, 5, "Rare"],
+    ["Legs", getLegsRarity, 6, "Epic"],
+    ["Legs", getLegsRarity, 9, "Epic"],
+    ["Legs", getLegsRarity, 10, "Legendary"],
+    ["Hands", getHandsRarity, 4, "Common"],
+    ["Hands", getHandsRarity, 5, "Uncommon"],
+    ["Hands", getHandsRarity, 19, "Uncommon"],
+    ["Hands", getHandsRarity, 20, "Rare"],
+    ["Hands", getHandsRarity, 99, "Rare"],
+    ["Hands", getHandsRarity, 100, "Epic"],
+    ["Hands", getHandsRarity, 499, "Epic"],
+    ["Hands", getHandsRarity, 500, "Legendary"],
+    ["Feet", getFeetRarity, 2, "Common"],
+    ["Feet", getFeetRarity, 3, "Uncommon"],
+    ["Feet", getFeetRarity, 7, "Uncommon"],
+    ["Feet", getFeetRarity, 8, "Rare"],
+    ["Feet", getFeetRarity, 14, "Rare"],
+    ["Feet", getFeetRarity, 15, "Epic"],
+    ["Feet", getFeetRarity, 29, "Epic"],
+    ["Feet", getFeetRarity, 30, "Legendary"],
+    ["Ammo", getAmmoRarity, 0, "Common"],
+    ["Ammo", getAmmoRarity, 1, "Uncommon"],
+    ["Ammo", getAmmoRarity, 9, "Uncommon"],
+    ["Ammo", getAmmoRarity, 10, "Rare"],
+    ["Ammo", getAmmoRarity, 29, "Rare"],
+    ["Ammo", getAmmoRarity, 30, "Epic"],
+    ["Ammo", getAmmoRarity, 99, "Epic"],
+    ["Ammo", getAmmoRarity, 100, "Legendary"]
+  ] as const)("maps a new-slot threshold boundary", (_slot, rarity, value, expected) => {
+    expect(rarity(value)).toBe(expected);
   });
 
   it("preserves the existing five slot rarity behavior", () => {
@@ -97,6 +140,58 @@ describe("equipment foundations", () => {
 });
 
 describe("buildEquipment", () => {
+  it("breaks equal Main hand star scores by newer update date, then API order", () => {
+    const older = equipmentRepo({
+      name: "alpha",
+      fullName: "owner/alpha",
+      stars: 10,
+      updatedAt: "2026-01-01T00:00:00Z"
+    });
+    const newer = equipmentRepo({
+      name: "zeta",
+      fullName: "owner/zeta",
+      stars: 10,
+      updatedAt: "2026-06-01T00:00:00Z"
+    });
+    expect(findSlot(buildEquipment(equipmentInput({ repos: [older, newer] })).items, "Main hand").name)
+      .toBe("Blade of zeta");
+
+    const sameDate = { ...older, updatedAt: newer.updatedAt };
+    expect(findSlot(buildEquipment(equipmentInput({ repos: [newer, sameDate] })).items, "Main hand").name)
+      .toBe("Blade of zeta");
+  });
+
+  it("breaks equal Off hand fork scores by newer update date, then API order", () => {
+    const older = equipmentRepo({
+      name: "alpha",
+      fullName: "owner/alpha",
+      forks: 10,
+      updatedAt: "2026-01-01T00:00:00Z"
+    });
+    const newer = equipmentRepo({
+      name: "zeta",
+      fullName: "owner/zeta",
+      forks: 10,
+      updatedAt: "2026-06-01T00:00:00Z"
+    });
+    expect(findSlot(buildEquipment(equipmentInput({ repos: [older, newer] })).items, "Off hand").name)
+      .toBe("Aegis of zeta");
+
+    const sameDate = { ...older, updatedAt: newer.updatedAt };
+    expect(findSlot(buildEquipment(equipmentInput({ repos: [newer, sameDate] })).items, "Off hand").name)
+      .toBe("Aegis of zeta");
+  });
+
+  it("preserves API order for Ring timestamp ties despite alphabetical names", () => {
+    const alpha = equipmentRepo({ name: "alpha", fullName: "owner/alpha" });
+    const zeta = equipmentRepo({ name: "zeta", fullName: "owner/zeta" });
+
+    expect(findSlot(buildEquipment(equipmentInput({ repos: [zeta, alpha] })).items, "Ring").name)
+      .toBe("Signet of zeta");
+    expect(findSlot(buildEquipment(equipmentInput({ repos: [alpha, zeta] })).items, "Ring").name)
+      .toBe("Signet of alpha");
+  });
+
   it("derives every worn slot in canonical order for a rich profile", () => {
     const richInput = equipmentInput({
       user: { followers: 200, publicGists: 12 },
@@ -210,6 +305,26 @@ describe("buildEquipment", () => {
       expect(findSlot(items, "Legs").name).toBe("Greaves of alpha");
       expect(findSlot(items, "Hands").name).toBe("Gauntlets of alpha");
     }
+  });
+
+  it.each([
+    [1023, "Common", "1,023 KB of hammered code"],
+    [1024, "Uncommon", "1 MB of hammered code"]
+  ] as const)("derives Body at %d KB as %s with readable detail", (sizeKb, rarity, detail) => {
+    const body = findSlot(buildEquipment(equipmentInput({
+      repos: [equipmentRepo({ sizeKb })]
+    })).items, "Body");
+    expect(body).toMatchObject({ rarity, detail });
+  });
+
+  it.each([
+    ["2026-01-01T00:00:00Z", "2026-06-30T00:00:00Z", "Maintained for 5 months", "Common"],
+    ["2024-01-01T00:00:00Z", "2026-06-30T00:00:00Z", "Maintained for 2 years", "Uncommon"]
+  ] as const)("formats Legs maintenance from %s to %s", (createdAt, pushedAt, detail, rarity) => {
+    const legs = findSlot(buildEquipment(equipmentInput({
+      repos: [equipmentRepo({ createdAt, pushedAt })]
+    })).items, "Legs");
+    expect(legs).toMatchObject({ detail, rarity });
   });
 });
 
