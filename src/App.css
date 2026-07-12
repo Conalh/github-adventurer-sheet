@@ -562,29 +562,26 @@ p {
 
 
 
-.inn-room { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-.inn-floorboards { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, #24170f 0 20px, #39261a 21px 23px, #1b110b 24px 25px), repeating-linear-gradient(90deg, transparent 0 92px, rgba(0,0,0,.35) 93px 96px); }
-.inn-floorboards::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 48%, transparent 0 35%, rgba(8,4,2,.42) 100%); }
-.inn-central-rug { position: absolute; z-index: 1; top: 10%; bottom: 8%; left: 50%; width: clamp(170px, 25%, 230px); border: 7px solid #c39a25; background: #8f171d; box-shadow: inset 0 0 0 5px #531014, 0 8px 12px rgba(0,0,0,.55); transform: translateX(-50%); }
-.inn-central-rug i { position: absolute; top: 54%; left: 50%; width: 58px; height: 58px; background: #25130f; clip-path: polygon(50% 0, 62% 36%, 100% 50%, 62% 64%, 50% 100%, 38% 64%, 0 50%, 38% 36%); transform: translate(-50%, -50%); }
-.inn-wall { position: absolute; z-index: 2; background: #7a5a38; box-shadow: inset 0 -8px #382215, 0 5px 10px rgba(0,0,0,.55); }
-.inn-wall--north { top: 0; right: 0; left: 0; height: 42px; }
-.inn-wall--west { top: 0; bottom: 0; left: 0; width: 34px; }
-.inn-wall--east { top: 0; right: 0; bottom: 0; width: 34px; }
-.inn-table { position: absolute; z-index: 3; bottom: 18%; width: 22%; height: 21%; border: 4px solid #2b190f; background: repeating-linear-gradient(90deg, #5a3821 0 28px, #3b2417 29px 32px); box-shadow: 8px 10px 0 rgba(0,0,0,.34); }
-.inn-table--left { left: 7%; }
-.inn-table--right { right: 7%; }
-.inn-table i { position: absolute; right: 10%; bottom: -38px; left: 10%; height: 26px; background: #392116; box-shadow: 0 7px 0 #1d100a; }
-.inn-table b { position: absolute; bottom: -54px; width: 24px; height: 24px; border-radius: 50%; background: #6b3025; box-shadow: inset 0 0 0 4px #351711; }
-.inn-table b:nth-of-type(1) { left: 8%; }
-.inn-table b:nth-of-type(2) { right: 8%; }
-.inn-counter { position: absolute; z-index: 3; right: 29%; bottom: 4%; left: 29%; height: 72px; border: 5px solid #28170e; background: repeating-linear-gradient(90deg, #5c3a24 0 58px, #3c2517 59px 62px); box-shadow: 0 -8px 0 #795239; }
-.inn-hearth { position: absolute; right: 4%; bottom: 24%; z-index: 3; width: 84px; height: 112px; border: 4px solid #241b16; background: #625249; pointer-events: none; }
-.hearth-mantle { position: absolute; top: -10px; right: -12px; left: -12px; height: 14px; background: #5b351d; box-shadow: 0 4px 0 #23130b; }
-.hearth-fire { position: absolute; right: 23px; bottom: 10px; left: 23px; height: 54px; background: radial-gradient(ellipse at 50% 100%, #fff08a 0 12%, #ff9a2e 30%, #9e2e12 58%, transparent 62%); filter: drop-shadow(0 0 15px rgba(255,145,45,.6)); }
-.inn-scatter { position: absolute; z-index: 2; width: 8px; height: 8px; background: #d0a533; clip-path: polygon(50% 0, 100% 45%, 58% 100%, 0 62%); }
-.inn-scatter--left { left: 34%; bottom: 18%; }
-.inn-scatter--right { right: 30%; top: 23%; }
+.inn-room { --wood-hi:#9b6840; --wood:#664022; --wood-lo:#352014; --outline:#21130c; --stone-hi:#8b7968; --stone:#625348; --stone-lo:#302923; position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.inn-floorboards { position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent 0 21px, rgba(12,7,4,.72) 22px 24px), repeating-linear-gradient(90deg, #2b1a10 0 77px, #3b2416 78px 153px, #25160e 154px 158px); }
+.inn-floorboards::before { content:""; position:absolute; inset:24px 0 0; background:repeating-linear-gradient(90deg, transparent 0 38px, rgba(8,4,2,.34) 39px 41px, transparent 42px 118px); opacity:.7; }
+.inn-floorboards::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 48%, transparent 0 32%, rgba(8,4,2,.48) 100%); }
+.floor-knot,.floor-nails { position:absolute; z-index:1; display:block; }
+.floor-knot { width:18px; height:8px; border:2px solid #1a0f09; border-radius:50%; box-shadow:inset 0 0 0 2px #4d2c18; }
+.floor-knot--one { top:32%; left:17%; transform:rotate(-8deg); }
+.floor-knot--two { right:20%; bottom:24%; transform:rotate(12deg); }
+.floor-nails { width:4px; height:4px; border-radius:50%; background:#17100c; box-shadow:20px 0 #17100c; }
+.floor-nails--one { top:19%; left:31%; }.floor-nails--two { right:34%; bottom:17%; }
+.inn-central-rug { position:absolute; z-index:1; top:9%; bottom:7%; left:50%; width:clamp(170px,25%,230px); border:7px solid #c79b28; background:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 3px,transparent 4px 9px),#8f171d; box-shadow:inset 0 0 0 4px #561014,inset 0 0 0 7px #b67f24,7px 10px 0 rgba(0,0,0,.34); transform:translateX(-50%); }
+.inn-central-rug i { position:absolute; top:54%; left:50%; width:58px; height:58px; border:3px solid #c79b28; background:#3a1414; clip-path:polygon(50% 0,62% 36%,100% 50%,62% 64%,50% 100%,38% 64%,0 50%,38% 36%); transform:translate(-50%,-50%); }
+.inn-wall-frame { position:absolute; inset:0; z-index:2; width:100%; height:100%; overflow:visible; filter:drop-shadow(5px 6px 0 rgba(0,0,0,.34)); }
+.inn-wall-plaster { fill:#786144; }.inn-wall-timber { fill:var(--wood); stroke:var(--outline); stroke-width:5; vector-effect:non-scaling-stroke; }.inn-wall-highlight { fill:none; stroke:var(--wood-hi); stroke-width:4; opacity:.75; vector-effect:non-scaling-stroke; }.inn-wall-joints { fill:none; stroke:var(--wood-lo); stroke-width:5; vector-effect:non-scaling-stroke; }.inn-wall-pegs { fill:#29231d; stroke:#aa8e63; stroke-width:2; }
+.inn-furniture { position:absolute; z-index:3; overflow:visible; filter:drop-shadow(2px 3px 0 rgba(0,0,0,.38)); }
+.inn-contact-shadow { fill:rgba(8,4,2,.48); }.inn-table { bottom:18%; width:22%; height:31%; }.inn-table--left { left:15.5%; }.inn-table--right { right:15.5%; }
+.inn-table-legs { fill:var(--wood-lo); stroke:var(--outline); stroke-width:3; }.inn-table-top { fill:var(--wood); stroke:var(--outline); stroke-width:5; stroke-linejoin:round; }.inn-table-bevel { fill:var(--wood-hi); opacity:.72; }.inn-table-planks { fill:none; stroke:#3f2516; stroke-width:3; }.inn-wood-knot { fill:#2b190f; stroke:#8a5832; stroke-width:2; }.inn-bench { fill:#58351f; stroke:var(--outline); stroke-width:3; stroke-linejoin:round; }.inn-bench-highlight { fill:none; stroke:#9a6038; stroke-width:3; }
+.inn-counter { right:29%; bottom:2%; left:29%; width:42%; height:19%; }.inn-counter-front { fill:#53321e; stroke:var(--outline); stroke-width:5; }.inn-counter-top { fill:#7b4d2d; stroke:var(--outline); stroke-width:5; stroke-linejoin:round; }.inn-counter-highlight { fill:none; stroke:#ae7447; stroke-width:4; }.inn-counter-panels { fill:none; stroke:#2f1c12; stroke-width:4; }.inn-counter-posts { fill:#382116; }
+.inn-hearth { right:2%; bottom:20%; width:112px; height:150px; pointer-events:none; }.inn-hearth-stones>path:first-child { fill:var(--stone-lo); stroke:var(--outline); stroke-width:5; }.inn-hearth-stones>path:not(:first-child) { fill:var(--stone); stroke:#40362f; stroke-width:3; }.inn-hearth-mantle { fill:#5d371f; stroke:var(--outline); stroke-width:5; }.inn-hearth-mantle-highlight { fill:none; stroke:#a56d42; stroke-width:4; }.inn-firebox { fill:#160d09; stroke:#2a1b14; stroke-width:5; }.inn-fire-logs { fill:none; stroke:#5f2917; stroke-width:6; stroke-linecap:round; }.inn-flame--outer { fill:#e65419; filter:drop-shadow(0 0 7px rgba(255,116,31,.7)); }.inn-flame--inner { fill:#ffe36d; }
+.inn-room-detail { position:absolute; z-index:3; display:block; }.inn-room-detail--mug { top:31%; left:14%; width:13px; height:15px; border:3px solid #bda274; border-radius:2px 2px 5px 5px; box-shadow:7px 2px 0 -3px #bda274; transform:rotate(-8deg); }.inn-room-detail--coins { top:25%; right:17%; width:7px; height:7px; border-radius:50%; background:#d3a72b; box-shadow:9px 4px #a8791c,17px -2px #c89523; }
 
 .skillcape-art { position: relative; display: block; color: #e4ddc5; }
 .skillcape-art__garment { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(3px 5px 2px rgba(0,0,0,.65)); }
