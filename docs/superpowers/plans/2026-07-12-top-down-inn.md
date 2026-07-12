@@ -23,6 +23,8 @@
 
 - Create `src/components/SkillcapeArt.tsx`: palette lookup, fallback behavior, reusable garment SVG, and skill emblem composition.
 - Create `src/components/SkillcapeArt.test.tsx`: artwork metadata, trim state, emblem, and fallback tests.
+- Create `src/components/TrophyArt.tsx`: category-specific SVG artifacts, tier materials, wall/shelf presentation metadata, and neutral fallback.
+- Create `src/components/TrophyArt.test.tsx`: category silhouettes, material tiers, mount styles, and fallback tests.
 - Create `src/components/InnRoom.tsx`: semantic-free decorative room structure.
 - Create `src/components/InnRoom.test.tsx`: scenery structure and accessibility-boundary tests.
 - Modify `src/components/TrophyWall.tsx`: replace cape placeholders with `SkillcapeArt` while preserving display controls and tooltips.
@@ -189,7 +191,186 @@ git add src/components/SkillcapeArt.tsx src/components/SkillcapeArt.test.tsx
 git commit -m "feat: add illustrated skillcape artwork"
 ```
 
-### Task 2: Use illustrated capes in both display contexts
+### Task 2: Category-specific trophy artwork
+
+**Files:**
+- Create: `src/components/TrophyArt.tsx`
+- Create: `src/components/TrophyArt.test.tsx`
+
+**Interfaces:**
+- Consumes: `TrophyMaterial` from `src/lib/trophyRoom.ts`.
+- Produces: `TrophyArt({ displayId, material })`, where `displayId: string` and `material: TrophyMaterial`.
+- Produces: `getTrophyCategory(displayId: string): TrophyCategory` and `getTrophyMaterialPalette(material: TrophyMaterial): TrophyMaterialPalette`.
+
+- [ ] **Step 1: Write failing trophy-art tests**
+
+Create `src/components/TrophyArt.test.tsx`:
+
+```tsx
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
+import type { TrophyMaterial } from "../lib/trophyRoom";
+import {
+  TrophyArt,
+  getTrophyCategory,
+  getTrophyMaterialPalette,
+} from "./TrophyArt";
+
+const TROPHIES = [
+  ["trophy:stars", "stars", "shelf"],
+  ["trophy:followers", "followers", "wall"],
+  ["trophy:forks", "forks", "shelf"],
+  ["trophy:veteran", "veteran", "wall"],
+  ["trophy:stewardship", "stewardship", "shelf"],
+] as const;
+
+describe("TrophyArt", () => {
+  it("renders a distinct artifact and correct mount for every trophy category", () => {
+    const markup = TROPHIES.map(([displayId]) =>
+      renderToStaticMarkup(<TrophyArt displayId={displayId} material="Gold" />),
+    );
+
+    for (const [index, [displayId, category, mount]] of TROPHIES.entries()) {
+      expect(getTrophyCategory(displayId)).toBe(category);
+      expect(markup[index]).toContain(`data-trophy-art="${category}"`);
+      expect(markup[index]).toContain(`data-mount="${mount}"`);
+      expect(markup[index]).toContain(`trophy-art__${category}`);
+    }
+  });
+
+  it("maps all material tiers and uses a neutral fallback artifact", () => {
+    const materials: TrophyMaterial[] = ["Bronze", "Silver", "Gold", "Runite", "Legendary"];
+    expect(new Set(materials.map((material) => getTrophyMaterialPalette(material).metal)).size)
+      .toBe(materials.length);
+
+    const unknown = renderToStaticMarkup(
+      <TrophyArt displayId="trophy:unknown" material="Bronze" />,
+    );
+    expect(unknown).toContain('data-trophy-art="unknown"');
+    expect(unknown).toContain('class="trophy-art__unknown"');
+  });
+});
+```
+
+- [ ] **Step 2: Run the focused test and confirm the missing-module failure**
+
+Run: `npm test -- src/components/TrophyArt.test.tsx`
+
+Expected: FAIL because `./TrophyArt` does not exist.
+
+- [ ] **Step 3: Implement category and material artwork**
+
+Create `src/components/TrophyArt.tsx`:
+
+```tsx
+import type { CSSProperties, ReactNode } from "react";
+import type { TrophyMaterial } from "../lib/trophyRoom";
+
+export type TrophyCategory =
+  | "stars"
+  | "followers"
+  | "forks"
+  | "veteran"
+  | "stewardship"
+  | "unknown";
+
+export type TrophyMaterialPalette = {
+  metal: string;
+  shadow: string;
+  highlight: string;
+  glow: string;
+};
+
+const MATERIAL_PALETTES: Record<TrophyMaterial, TrophyMaterialPalette> = {
+  Bronze: { metal: "#a85f32", shadow: "#5b2f1c", highlight: "#d88a4e", glow: "transparent" },
+  Silver: { metal: "#aeb8c2", shadow: "#59636d", highlight: "#e5edf2", glow: "transparent" },
+  Gold: { metal: "#d4a62f", shadow: "#765115", highlight: "#ffe17a", glow: "rgba(255,210,76,.24)" },
+  Runite: { metal: "#4da9b0", shadow: "#245b62", highlight: "#86e1df", glow: "rgba(77,210,213,.28)" },
+  Legendary: { metal: "#9b55d0", shadow: "#4a2869", highlight: "#e1a1ff", glow: "rgba(187,94,255,.38)" },
+};
+
+const CATEGORIES = new Set<TrophyCategory>([
+  "stars", "followers", "forks", "veteran", "stewardship",
+]);
+
+export function getTrophyCategory(displayId: string): TrophyCategory {
+  const category = displayId.startsWith("trophy:") ? displayId.slice(7) : "";
+  return CATEGORIES.has(category as TrophyCategory)
+    ? category as TrophyCategory
+    : "unknown";
+}
+
+export function getTrophyMaterialPalette(material: TrophyMaterial): TrophyMaterialPalette {
+  return MATERIAL_PALETTES[material];
+}
+
+function artifact(category: TrophyCategory): ReactNode {
+  switch (category) {
+    case "stars":
+      return <g className="trophy-art__stars"><path d="M48 12 58 35 83 38 64 55 69 80 48 67 27 80 32 55 13 38 38 35z" /><path d="M34 84h28l8 13H26z" /></g>;
+    case "followers":
+      return <g className="trophy-art__followers"><path d="M18 12h60v74L48 102 18 86z" /><circle cx="39" cy="43" r="9" /><circle cx="58" cy="43" r="9" /><path d="M29 70q19-21 38 0" /></g>;
+    case "forks":
+      return <g className="trophy-art__forks"><path d="M13 35h70v16L65 62H36L22 81H10l14-30H13z" /><path d="M38 30V14M58 30V14M38 22h20" /><path d="M29 80h39l8 15H20z" /></g>;
+    case "veteran":
+      return <g className="trophy-art__veteran"><path d="M17 18h62v58Q48 103 17 76z" /><path d="M48 29v49M31 45h34" /><path d="M27 14h42" /></g>;
+    case "stewardship":
+      return <g className="trophy-art__stewardship"><path d="M28 27h40l8 62H20z" /><path d="M33 27q15-23 30 0" /><path className="trophy-art__flame" d="M48 48q18 17 0 32-18-15 0-32z" /><path d="M16 91h64" /></g>;
+    default:
+      return <g className="trophy-art__unknown"><path d="M20 18h56v58Q48 101 20 76z" /><path d="m48 35 13 14-13 19-13-19z" /></g>;
+  }
+}
+
+export function TrophyArt({
+  displayId,
+  material,
+}: {
+  displayId: string;
+  material: TrophyMaterial;
+}) {
+  const category = getTrophyCategory(displayId);
+  const palette = getTrophyMaterialPalette(material);
+  const mount = category === "followers" || category === "veteran" ? "wall" : "shelf";
+  const style = {
+    "--trophy-metal": palette.metal,
+    "--trophy-shadow": palette.shadow,
+    "--trophy-highlight": palette.highlight,
+    "--trophy-glow": palette.glow,
+  } as CSSProperties;
+
+  return (
+    <span
+      className={`trophy-art trophy-art--${category}`}
+      data-trophy-art={category}
+      data-material={material.toLowerCase()}
+      data-mount={mount}
+      style={style}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 96 108" focusable="false">{artifact(category)}</svg>
+    </span>
+  );
+}
+```
+
+- [ ] **Step 4: Run the focused test and full suite**
+
+Run: `npm test -- src/components/TrophyArt.test.tsx`
+
+Expected: PASS, 2 tests.
+
+Run: `npm test`
+
+Expected: all tests pass.
+
+- [ ] **Step 5: Commit the trophy artwork unit**
+
+```bash
+git add src/components/TrophyArt.tsx src/components/TrophyArt.test.tsx
+git commit -m "feat: add distinct trophy artwork"
+```
+
+### Task 3: Use illustrated capes and trophies in display contexts
 
 **Files:**
 - Modify: `src/components/TrophyWall.tsx`
@@ -198,8 +379,8 @@ git commit -m "feat: add illustrated skillcape artwork"
 - Modify: `src/components/Viewport.test.tsx`
 
 **Interfaces:**
-- Consumes: `SkillcapeArt` from Task 1 and existing `WallDisplay.skill`, `WallDisplay.trimmed`, and `Prestige.capeSkill` values.
-- Produces: wall and worn cape markup sharing one artwork implementation.
+- Consumes: `SkillcapeArt` from Task 1, `TrophyArt` from Task 2, and existing `WallDisplay` and `Prestige` values.
+- Produces: wall and worn cape markup sharing one cape implementation, plus category-specific artwork for every trophy button.
 
 - [ ] **Step 1: Add failing integration assertions**
 
@@ -210,6 +391,8 @@ expect(markup).toContain('data-skill="Strength"');
 expect(markup).toContain('data-trimmed="true"');
 expect(markup).toContain('class="skillcape-art__garment"');
 expect(markup).not.toContain('class="wall-display-art" aria-hidden="true"></span>');
+expect(markup).toContain('data-trophy-art="stars"');
+expect(markup).toContain('data-material="runite"');
 ```
 
 In `Viewport.test.tsx`, add:
@@ -234,7 +417,7 @@ Expected: FAIL because neither component renders `SkillcapeArt` yet.
 
 - [ ] **Step 3: Replace both placeholder implementations**
 
-In `TrophyWall.tsx`, remove the `CSSProperties` and `SKILL_COLORS` imports, import `SkillcapeArt`, and replace the decorative cape span with:
+In `TrophyWall.tsx`, remove the `CSSProperties` and `SKILL_COLORS` imports, import `SkillcapeArt` and `TrophyArt`, and replace the decorative display span with:
 
 ```tsx
 {display.kind === "cape" && display.skill ? (
@@ -244,7 +427,10 @@ In `TrophyWall.tsx`, remove the `CSSProperties` and `SKILL_COLORS` imports, impo
     variant="wall"
   />
 ) : (
-  <span className="wall-display-art" aria-hidden="true" />
+  <TrophyArt
+    displayId={display.id}
+    material={display.material ?? "Bronze"}
+  />
 )}
 ```
 
@@ -273,7 +459,7 @@ git add src/components/TrophyWall.tsx src/components/TrophyWall.test.tsx src/com
 git commit -m "feat: render skillcapes across the inn"
 ```
 
-### Task 3: Introduce the top-down room structure
+### Task 4: Introduce the top-down room structure
 
 **Files:**
 - Create: `src/components/InnRoom.tsx`
@@ -364,7 +550,7 @@ git add src/components/InnRoom.tsx src/components/InnRoom.test.tsx src/component
 git commit -m "feat: compose a top-down inn room"
 ```
 
-### Task 4: Style the top-down scene and display zones
+### Task 5: Style the top-down scene and display zones
 
 **Files:**
 - Modify: `src/App.css`
@@ -372,7 +558,7 @@ git commit -m "feat: compose a top-down inn room"
 - Modify: `src/components/TrophyWall.test.tsx`
 
 **Interfaces:**
-- Consumes: class names introduced by Tasks 1 through 3.
+- Consumes: class names introduced by Tasks 1 through 4.
 - Produces: the desktop composition, explicit layer order, cape garment finish, and non-overlapping wall zones.
 
 - [ ] **Step 1: Add failing CSS-contract tests**
@@ -445,6 +631,13 @@ In `src/App.css`, delete the old `.inn-back-wall`, `.inn-stonework`, `.inn-beam`
 .skillcape-art__emblem svg { width: 100%; height: 100%; stroke-width: 2.2; }
 .skillcape-art--wall { width: 58px; height: 86px; }
 .skillcape-art--worn { width: 100%; height: 100%; }
+.trophy-art { position: relative; display: block; width: 64px; height: 76px; filter: drop-shadow(3px 5px 2px rgba(0,0,0,.65)) drop-shadow(0 0 9px var(--trophy-glow)); }
+.trophy-art svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.trophy-art g { fill: var(--trophy-metal); stroke: var(--trophy-shadow); stroke-width: 3; stroke-linejoin: round; }
+.trophy-art g path:nth-child(even), .trophy-art g circle:nth-child(even) { fill: var(--trophy-highlight); }
+.trophy-art__flame { fill: #ffb238 !important; stroke: #8b2c12 !important; }
+.trophy-art[data-mount="wall"] { height: 82px; }
+.trophy-art[data-mount="shelf"] { margin-top: 8px; height: 68px; }
 ```
 
 Replace the existing trophy-wall layout and worn-cape geometry with these rules:
@@ -489,7 +682,7 @@ git add src/App.css src/components/Viewport.test.tsx src/components/TrophyWall.t
 git commit -m "feat: style the top-down OSRS inn"
 ```
 
-### Task 5: Desktop acceptance, regression fixes, and release readiness
+### Task 6: Desktop acceptance, regression fixes, and release readiness
 
 **Files:**
 - Modify if required by observed defects: `src/App.css`
@@ -499,7 +692,7 @@ git commit -m "feat: style the top-down OSRS inn"
 - Test alongside any fix: the corresponding `*.test.tsx` file
 
 **Interfaces:**
-- Consumes: complete top-down scene from Tasks 1 through 4.
+- Consumes: complete top-down scene from Tasks 1 through 5.
 - Produces: browser-verified desktop behavior and a clean, releasable branch.
 
 - [ ] **Step 1: Run the full automated suite**
