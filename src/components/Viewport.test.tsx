@@ -84,10 +84,12 @@ describe("Viewport", () => {
   it("reserves a portrait-safe desktop lane for the maximum display set", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
 
-    expect(styles).toMatch(/\.wall-zone\.cape-hooks\s*\{[^}]*right:\s*0[^}]*left:\s*0/s);
-    expect(styles).toMatch(/\.wall-zone\.cape-hooks \.wall-display-list\s*\{[^}]*flex-wrap:\s*nowrap[^}]*gap:\s*8px/s);
+    expect(styles).toMatch(/\.wall-zone\.cape-hooks\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) 240px minmax\(0, 1fr\)[^}]*right:\s*0[^}]*left:\s*0/s);
+    expect(styles).toMatch(/\.cape-hook-group\s*\{[^}]*flex-wrap:\s*nowrap[^}]*gap:\s*8px/s);
+    expect(styles).toMatch(/\.cape-hook-group--left\s*\{[^}]*justify-content:\s*flex-end/s);
+    expect(styles).toMatch(/\.cape-hook-group--right\s*\{[^}]*justify-content:\s*flex-start/s);
     expect(styles).toMatch(/\.wall-zone\.cape-hooks \.wall-display\s*\{[^}]*width:\s*44px[^}]*min-height:\s*65px/s);
-    expect(styles).toMatch(/\.wall-zone\.cape-hooks \.wall-display-item:nth-child\(6\)\s*\{[^}]*margin-left:\s*240px/s);
+    expect(styles).not.toContain(".wall-display-item:nth-child(6)");
     expect(styles).toMatch(/\.wall-zone\.upper-wall\s*\{[^}]*left:\s*0[^}]*width:\s*260px/s);
     expect(styles).toMatch(/\.wall-zone\.trophy-shelf\s*\{[^}]*right:\s*0[^}]*width:\s*190px/s);
     expect(styles).toMatch(/\.inn-table\s*\{[^}]*bottom:\s*18%/s);

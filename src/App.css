@@ -608,16 +608,17 @@ p {
 
 .trophy-wall { position: absolute; inset: 52px 42px 86px; pointer-events: none; }
 .wall-zone { position: absolute; min-width: 0; pointer-events: none; }
-.wall-zone.cape-hooks { top: 0; right: 0; left: 0; }
+.wall-zone.cape-hooks { top: 0; display: grid; grid-template-columns: minmax(0, 1fr) 240px minmax(0, 1fr); right: 0; left: 0; }
 .wall-zone.upper-wall { top: 26%; left: 0; width: 260px; }
 .wall-zone.trophy-shelf { top: 26%; right: 0; width: 190px; }
 .wall-display-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px 18px; margin: 0; padding: 18px 12px; list-style: none; }
 .wall-display-item { position: relative; pointer-events: auto; }
 .wall-display { position: relative; width: 58px; min-height: 86px; padding: 0; border: 0; background: transparent; color: #fff5d6; cursor: help; }
-.wall-zone.cape-hooks .wall-display-list { flex-wrap: nowrap; gap: 8px; padding: 12px 0; }
+.cape-hook-group { flex-wrap: nowrap; gap: 8px; padding: 12px 0; }
+.cape-hook-group--left { grid-column: 1; justify-content: flex-end; }
+.cape-hook-group--right { grid-column: 3; justify-content: flex-start; }
 .wall-zone.cape-hooks .wall-display { width: 44px; min-height: 65px; }
 .wall-zone.cape-hooks .skillcape-art--wall { width: 44px; height: 65px; }
-.wall-zone.cape-hooks .wall-display-item:nth-child(6) { margin-left: 240px; }
 .wall-display:focus-visible { outline: 3px solid var(--hud-yellow); outline-offset: 4px; }
 .wall-display.bronze { color: #b56a36; } .wall-display.silver { color: #c8d0d8; } .wall-display.gold { color: #f1c84b; } .wall-display.runite { color: #56b9c2; } .wall-display.legendary { color: #b86cff; }
 .wall-display-tooltip { position: absolute; top: calc(100% + 8px); bottom: auto; left: 50%; z-index: 60; display: none; width: 230px; padding: 9px 11px; border: 2px solid #8b744b; background: #17130f; color: #eee4cc; text-align: left; box-shadow: 0 8px 20px rgba(0,0,0,.65); transform: translateX(-50%); }

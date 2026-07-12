@@ -52,10 +52,26 @@ describe("TrophyWall", () => {
   it("attaches the zone and list layout classes used to keep displays separated", () => {
     const markup = renderToStaticMarkup(<TrophyWall displays={displays} />);
 
-    expect(markup).toContain('<section aria-label="Cape hooks" class="wall-zone cape-hooks">');
-    expect(markup.match(/class="wall-display-list"/g)).toHaveLength(3);
+    expect(markup).toContain('<section aria-label="Cape hooks" class="wall-zone cape-hooks" data-cape-count="1">');
+    expect(markup.match(/wall-display-list/g)).toHaveLength(4);
     expect(markup).toContain('class="wall-display cape cape-display"');
     expect(markup).not.toContain('class="wall-display cape skillcape"');
+  });
+
+  it("classifies every supported cape count around the portrait lane", () => {
+    for (let count = 1; count <= 10; count += 1) {
+      const capes: WallDisplay[] = Array.from({ length: count }, (_, index) => ({
+        ...displays[0],
+        id: `cape:${index}`,
+        name: `Cape ${index + 1}`,
+      }));
+      const markup = renderToStaticMarkup(<TrophyWall displays={capes} />);
+
+      expect(markup).toContain(`data-cape-count="${count}"`);
+      expect(markup).toContain(`data-cape-side="left" data-display-count="${Math.ceil(count / 2)}"`);
+      expect(markup).toContain(`data-cape-side="right" data-display-count="${Math.floor(count / 2)}"`);
+      expect(markup.match(/class="wall-display cape cape-display"/g)).toHaveLength(count);
+    }
   });
 
   it("renders each display exactly once without disabled buttons or links", () => {
