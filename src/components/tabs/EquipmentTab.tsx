@@ -1,6 +1,10 @@
 import type { ReactNode, SVGProps } from "react";
 import type { CharacterSheet } from "../../lib/githubCharacter";
-import type { EquipmentItem, EquipmentSlot } from "../../lib/equipment";
+import {
+  formatStackCount,
+  type EquipmentItem,
+  type EquipmentSlot
+} from "../../lib/equipment";
 import type { ChatMessage } from "../Chatbox";
 import {
   AmuletIcon,
@@ -72,7 +76,7 @@ export function EquipmentTab({
             <button
               key={item.slot}
               type="button"
-              className={`worn-slot filled rarity-${item.rarity.toLowerCase()}${edgeClass}`}
+              className={`worn-slot filled${item.isFallback ? " fallback" : ""} rarity-${item.rarity.toLowerCase()}${edgeClass}`}
               style={{ gridArea: SLOT_AREAS[item.slot] }}
               onClick={() => examine(item)}
               aria-label={`${item.slot}: ${item.name}, ${item.rarity}. ${item.detail}`}
@@ -100,10 +104,18 @@ export function EquipmentTab({
             <button
               type="button"
               className="inventory-item"
-              onClick={() => say("examine", item.examine)}
-              aria-label={item.name}
+              onClick={() => say(
+                "examine",
+                `${item.name} (${item.count.toLocaleString("en")}): ${item.examine}`
+              )}
+              aria-label={`${item.name}, ${item.count.toLocaleString("en")} — ${item.examine}`}
             >
-              <span aria-hidden="true">{item.abbreviation}</span>
+              <span className={`inventory-glyph kind-${item.kind}`} aria-hidden="true">
+                {item.abbreviation}
+              </span>
+              <span className="inventory-count" aria-hidden="true">
+                {formatStackCount(item.count)}
+              </span>
               <span className="rs-tooltip" role="presentation">
                 <strong>{item.name}</strong>
               </span>
