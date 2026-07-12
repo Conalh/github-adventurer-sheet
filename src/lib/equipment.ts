@@ -150,3 +150,224 @@ function getTime(dateValue: string): number {
   const time = new Date(dateValue).getTime();
   return Number.isFinite(time) ? time : 0;
 }
+
+function item(
+  slot: EquipmentSlot,
+  name: string,
+  detail: string,
+  rarity: Rarity,
+  href?: string
+): EquipmentItem {
+  return { slot, name, detail, rarity, isFallback: false, ...(href ? { href } : {}) };
+}
+
+function fallback(slot: EquipmentSlot, name: string, detail: string): EquipmentItem {
+  return { slot, name, detail, rarity: "Common", isFallback: true };
+}
+
+function maxRepo(
+  repos: EquipmentRepoInput[],
+  score: (repo: EquipmentRepoInput) => number
+): EquipmentRepoInput | undefined {
+  return [...repos].sort(
+    (a, b) => score(b) - score(a) || a.fullName.localeCompare(b.fullName)
+  )[0];
+}
+
+function pluralize(count: number, noun: string): string {
+  return `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
+}
+
+function accountAgeCape(accountAgeYears: number): string {
+  if (accountAgeYears >= 10) return "Ancient Account Cape";
+  if (accountAgeYears >= 5) return "Veteran Account Cape";
+  if (accountAgeYears >= 1) return "Adventurer Account Cape";
+  return "Fresh Account Cape";
+}
+
+function formatDate(dateValue: string): string {
+  const time = getTime(dateValue);
+  if (time === 0) return "Unknown";
+
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }).format(new Date(time));
+}
+
+function maintenanceSpan(repo: EquipmentRepoInput): number {
+  if (!repo.pushedAt) return 0;
+  const created = new Date(repo.createdAt).getTime();
+  const pushed = new Date(repo.pushedAt).getTime();
+  const span = pushed - created;
+  return Number.isFinite(span) && span > 0 ? span : 0;
+}
+
+function formatSize(sizeKb: number): string {
+  const mb = sizeKb / 1024;
+  if (mb >= 1) return `${Number(mb.toFixed(1)).toLocaleString()} MB`;
+  return `${sizeKb.toLocaleString()} KB`;
+}
+
+export function buildEquipment(input: EquipmentInput): CharacterEquipment {
+  const repos = input.repos;
+  const mostStarred = maxRepo(repos, (repo) => normaliseCount(repo.stars));
+  const mostForked = maxRepo(repos, (repo) => normaliseCount(repo.forks));
+  const mostRecent = maxRepo(repos, (repo) => getTime(repo.updatedAt));
+  const mostUsedLanguage = [...input.languageCounts].sort(
+    (a, b) => normaliseCount(b.count) - normaliseCount(a.count) || a.name.localeCompare(b.name)
+  )[0];
+  const topTopic = [...input.topicCounts].sort(
+    (a, b) => normaliseCount(b.count) - normaliseCount(a.count) || a.name.localeCompare(b.name)
+  )[0];
+
+  const mainHand = mostStarred
+    ? item(
+        "Main hand",
+        `Blade of ${mostStarred.name}`,
+        normaliseCount(mostStarred.stars) > 0
+          ? `${pluralize(normaliseCount(mostStarred.stars), "star")} — most starred work`
+          : "Freshly forged, awaiting its first star",
+        getMainHandRarity(normaliseCount(mostStarred.stars)),
+        mostStarred.htmlUrl
+      )
+    : fallback("Main hand", "Empty scabbard", "No public repository to forge a blade from");
+
+  const offHand = mostForked
+    ? item(
+        "Off hand",
+        `Aegis of ${mostForked.name}`,
+        normaliseCount(mostForked.forks) > 0
+          ? `${pluralize(normaliseCount(mostForked.forks), "fork")} — most forked work`
+          : "Unscarred, awaiting its first fork",
+        getOffHandRarity(normaliseCount(mostForked.forks)),
+        mostForked.htmlUrl
+      )
+    : fallback("Off hand", "Bare arm", "No forked work to raise as a shield");
+
+  const cape = input.prestige.capeSkill
+    ? item(
+        "Cape",
+        `${input.prestige.capeSkill} Skillcape${input.prestige.trimmed ? " (t)" : ""}`,
+        input.prestige.trimmed
+          ? `Earned at level 99 ${input.prestige.capeSkill}, trimmed by a second mastery`
+          : `Earned at level 99 ${input.prestige.capeSkill}`,
+        "Legendary"
+      )
+    : item(
+        "Cape",
+        accountAgeCape(input.accountAgeYears),
+        input.accountAgeYears >= 1
+          ? `Woven over ${Math.floor(input.accountAgeYears).toLocaleString()} year${Math.floor(input.accountAgeYears) === 1 ? "" : "s"} of service`
+          : "Freshly woven this very year",
+        getCapeRarity(input.accountAgeYears)
+      );
+
+  const amulet = mostUsedLanguage
+    ? item(
+        "Amulet",
+        `${mostUsedLanguage.name} Amulet`,
+        `Attuned through ${mostUsedLanguage.count.toLocaleString()} ${mostUsedLanguage.count === 1 ? "repository" : "repositories"}`,
+        getAmuletRarity(input.languageCounts.length)
+      )
+    : fallback("Amulet", "Unattuned Amulet", "No dominant tongue detected");
+
+  const ring = mostRecent
+    ? item(
+        "Ring",
+        `Signet of ${mostRecent.name}`,
+        `Last touched ${formatDate(mostRecent.updatedAt)}`,
+        getRingRarity(mostRecent.updatedAt, input.now),
+        mostRecent.htmlUrl
+      )
+    : fallback("Ring", "Bare finger", "No recent work to seal");
+
+  const head = topTopic
+    ? item(
+        "Head",
+        `Helm of ${topTopic.name}`,
+        `Their declared field of study (used on ${topTopic.count} quests)`,
+        getHeadRarity(normaliseCount(topTopic.count))
+      )
+    : fallback("Head", "Unadorned Hood", "No field of study declared");
+
+  const bodyRepo = maxRepo(
+    repos.filter((repo) => normaliseCount(repo.sizeKb) > 0),
+    (repo) => normaliseCount(repo.sizeKb)
+  );
+  const body = bodyRepo
+    ? item(
+        "Body",
+        `Breastplate of ${bodyRepo.name}`,
+        `${formatSize(normaliseCount(bodyRepo.sizeKb))} of hammered code`,
+        getBodyRarity(normaliseCount(bodyRepo.sizeKb) / 1024),
+        bodyRepo.htmlUrl
+      )
+    : fallback("Body", "Cloth Tunic", "Travelling light");
+
+  const legsRepo = maxRepo(repos.filter((repo) => maintenanceSpan(repo) > 0), maintenanceSpan);
+  const legDays = legsRepo ? maintenanceSpan(legsRepo) / (24 * 60 * 60 * 1000) : 0;
+  const legDuration = legDays < 365.25
+    ? `${Math.max(1, Math.floor(legDays / 30.4375))} month${Math.max(1, Math.floor(legDays / 30.4375)) === 1 ? "" : "s"}`
+    : `${Math.floor(legDays / 365.25)} year${Math.floor(legDays / 365.25) === 1 ? "" : "s"}`;
+  const legs = legsRepo
+    ? item(
+        "Legs",
+        `Greaves of ${legsRepo.name}`,
+        `Maintained for ${legDuration}`,
+        getLegsRarity(legDays / 365.25),
+        legsRepo.htmlUrl
+      )
+    : fallback("Legs", "Patched Trousers", "Every journey starts somewhere");
+
+  const handsRepo = maxRepo(
+    repos.filter((repo) => normaliseCount(repo.openIssuesCount) > 0),
+    (repo) => normaliseCount(repo.openIssuesCount)
+  );
+  const hands = handsRepo
+    ? item(
+        "Hands",
+        `Gauntlets of ${handsRepo.name}`,
+        `Grappling ${pluralize(normaliseCount(handsRepo.openIssuesCount), "open issue")} & pull requests`,
+        getHandsRarity(normaliseCount(handsRepo.openIssuesCount)),
+        handsRepo.htmlUrl
+      )
+    : fallback("Hands", "Bare Hands", "No open quarrels");
+
+  const uniqueTopicCount = input.topicCounts.length;
+  const feet = uniqueTopicCount > 0
+    ? item(
+        "Feet",
+        "Boots of Wandering",
+        `Trodden through ${uniqueTopicCount} topics`,
+        getFeetRarity(uniqueTopicCount)
+      )
+    : fallback("Feet", "Barefoot", "The grass is soft here");
+
+  const publicGists = normaliseCount(input.user.publicGists);
+  const ammo = publicGists > 0
+    ? item(
+        "Ammo",
+        "Quiver of Gists",
+        `${publicGists} snippets nocked and loosed`,
+        getAmmoRarity(publicGists)
+      )
+    : fallback("Ammo", "Empty Quiver", "No gists loosed");
+
+  const bySlot: Record<EquipmentSlot, EquipmentItem> = {
+    Head: head,
+    Cape: cape,
+    Amulet: amulet,
+    Ammo: ammo,
+    "Main hand": mainHand,
+    Body: body,
+    "Off hand": offHand,
+    Legs: legs,
+    Hands: hands,
+    Feet: feet,
+    Ring: ring
+  };
+
+  return { items: EQUIPMENT_SLOT_ORDER.map((slot) => bySlot[slot]), backpack: [] };
+}
