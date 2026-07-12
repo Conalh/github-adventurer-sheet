@@ -56,4 +56,15 @@ describe("EquipmentTab", () => {
       ".worn-slot.filled:not(.fallback).rarity-legendary svg"
     );
   });
+
+  it("uses the shared floating tooltip outside the clipped tab panel", () => {
+    const sources = ["EquipmentTab.tsx", "SkillsTab.tsx", "DeedsTab.tsx"]
+      .map((file) => readFileSync(new URL(file, import.meta.url), "utf8"));
+
+    for (const source of sources) {
+      expect(source).toContain('import { FloatingTooltip } from "../FloatingTooltip";');
+      expect(source).toContain("<FloatingTooltip>");
+      expect(source).not.toContain('className="rs-tooltip"');
+    }
+  });
 });

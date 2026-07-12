@@ -7,6 +7,7 @@ import {
   type SkillName
 } from "../../lib/githubCharacter";
 import type { ChatMessage } from "../Chatbox";
+import { FloatingTooltip } from "../FloatingTooltip";
 import { SKILL_ICONS } from "../icons";
 
 export function SkillsTab({
@@ -61,7 +62,7 @@ export function SkillsTab({
                   <span className="slash" />
                   <span className="target">99</span>
                 </span>
-                <span className="rs-tooltip" role="presentation">
+                <FloatingTooltip>
                   <strong>{skill}</strong>
                   <em>{SKILL_LORE[skill]}</em>
                   <span>XP: {xp.toLocaleString()}</span>
@@ -72,7 +73,7 @@ export function SkillsTab({
                   ) : (
                     <span>Skill mastered!</span>
                   )}
-                </span>
+                </FloatingTooltip>
               </button>
             </li>
           );

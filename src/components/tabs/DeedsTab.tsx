@@ -1,5 +1,6 @@
 import { getAchievements, type CharacterSheet } from "../../lib/githubCharacter";
 import type { ChatMessage } from "../Chatbox";
+import { FloatingTooltip } from "../FloatingTooltip";
 
 export function DeedsTab({
   sheet,
@@ -41,7 +42,7 @@ export function DeedsTab({
                   ? "✓"
                   : `${achievement.current.toLocaleString()}/${achievement.goal.toLocaleString()}`}
               </span>
-              <span className="rs-tooltip" role="presentation">
+              <FloatingTooltip>
                 <strong>{achievement.name}</strong>
                 <em>{achievement.requirement}</em>
                 <span>
@@ -49,7 +50,7 @@ export function DeedsTab({
                     ? achievement.flavor
                     : `Progress: ${achievement.current.toLocaleString()} / ${achievement.goal.toLocaleString()}`}
                 </span>
-              </span>
+              </FloatingTooltip>
             </button>
           </li>
         ))}

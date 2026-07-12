@@ -6,6 +6,7 @@ import {
   type EquipmentSlot
 } from "../../lib/equipment";
 import type { ChatMessage } from "../Chatbox";
+import { FloatingTooltip } from "../FloatingTooltip";
 import {
   AmuletIcon,
   ArrowsIcon,
@@ -69,20 +70,18 @@ export function EquipmentTab({
       <div className="worn-grid" aria-label="Worn equipment">
         {sheet.equipment.items.map((item) => {
           const SlotIcon = SLOT_ICONS[item.slot];
-          const edgeClass =
-            item.slot === "Off hand" || item.slot === "Ring" ? " tip-end" : "";
 
           return (
             <button
               key={item.slot}
               type="button"
-              className={`worn-slot filled${item.isFallback ? " fallback" : ""} rarity-${item.rarity.toLowerCase()}${edgeClass}`}
+              className={`worn-slot filled${item.isFallback ? " fallback" : ""} rarity-${item.rarity.toLowerCase()}`}
               style={{ gridArea: SLOT_AREAS[item.slot] }}
               onClick={() => examine(item)}
               aria-label={`${item.slot}: ${item.name}, ${item.rarity}. ${item.detail}`}
             >
               <SlotIcon />
-              <span className="rs-tooltip" role="presentation">
+              <FloatingTooltip>
                 <strong className={`rarity-${item.rarity.toLowerCase()}`}>
                   {item.name}
                 </strong>
@@ -90,7 +89,7 @@ export function EquipmentTab({
                   {item.slot} · {item.rarity}
                 </em>
                 <span>{item.detail}</span>
-              </span>
+              </FloatingTooltip>
             </button>
           );
         })}
@@ -116,9 +115,9 @@ export function EquipmentTab({
               <span className="inventory-count" aria-hidden="true">
                 {formatStackCount(item.count)}
               </span>
-              <span className="rs-tooltip" role="presentation">
+              <FloatingTooltip>
                 <strong>{item.name}</strong>
-              </span>
+              </FloatingTooltip>
             </button>
           </li>
         ))}

@@ -1018,10 +1018,6 @@ p {
    -------------------------------------------------------------------------- */
 
 .rs-tooltip {
-  position: absolute;
-  bottom: calc(100% + 7px);
-  left: 50%;
-  z-index: 40;
   display: grid;
   gap: 2px;
   min-width: 158px;
@@ -1035,10 +1031,20 @@ p {
   line-height: 1.25;
   text-align: left;
   text-shadow: none;
-  transform: translateX(-50%);
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 0.12s ease;
+}
+
+.floating-tooltip-anchor {
+  display: none;
+}
+
+.rs-tooltip--floating {
+  position: fixed;
+  right: auto;
+  bottom: auto;
+  z-index: 1000;
+  opacity: 1;
+  transform: none;
 }
 
 .rs-tooltip strong {
@@ -1048,32 +1054,6 @@ p {
 .rs-tooltip em {
   color: #5c5238;
   font-style: italic;
-}
-
-button:hover > .rs-tooltip,
-button:focus-visible > .rs-tooltip {
-  opacity: 1;
-}
-
-/* Hover filters create stacking contexts; lift the hovered cell so its
-   tooltip paints above sibling slots instead of behind them. */
-.rs-skill-cell:hover,
-.rs-skill-cell:focus-visible,
-.worn-slot.filled:hover,
-.worn-slot.filled:focus-visible,
-.inventory-item:hover,
-.inventory-item:focus-visible,
-.deed-row:hover,
-.deed-row:focus-visible,
-.combat-plaque:hover,
-.combat-plaque:focus-visible {
-  z-index: 50;
-}
-
-.tip-end > .rs-tooltip {
-  right: 0;
-  left: auto;
-  transform: none;
 }
 
 /* --------------------------------------------------------------------------
