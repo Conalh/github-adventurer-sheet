@@ -11,6 +11,7 @@ export type GitHubUser = {
   followers: number;
   following: number;
   public_repos: number;
+  public_gists: number;
 };
 
 export type GitHubRepo = {
@@ -28,6 +29,12 @@ export type GitHubRepo = {
   fork: boolean;
   updated_at: string;
   homepage: string | null;
+  size: number;
+  open_issues_count: number;
+  created_at: string;
+  pushed_at: string | null;
+  license?: { spdx_id: string | null } | null;
+  is_template: boolean;
 };
 
 export type SkillName =
@@ -513,7 +520,7 @@ export async function getGitHubCharacter(
 }
 
 export function getCharacterCacheKey(username: string): string {
-  return `github-character:v4:${username}`;
+  return `github-character:v5:${username}`;
 }
 
 async function fetchRepos(

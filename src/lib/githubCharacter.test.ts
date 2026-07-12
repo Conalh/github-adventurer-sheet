@@ -5,6 +5,7 @@ import {
   getAchievements,
   getAmuletRarity,
   getCapeRarity,
+  getCharacterCacheKey,
   getMainHandRarity,
   getOffHandRarity,
   getPrestige,
@@ -34,7 +35,8 @@ const baseUser: GitHubUser = {
   created_at: "2020-01-01T00:00:00Z",
   followers: 10,
   following: 3,
-  public_repos: 2
+  public_repos: 2,
+  public_gists: 0
 };
 
 function repo(overrides: Partial<GitHubRepo>): GitHubRepo {
@@ -53,9 +55,21 @@ function repo(overrides: Partial<GitHubRepo>): GitHubRepo {
     fork: false,
     updated_at: "2026-06-01T00:00:00Z",
     homepage: null,
+    size: 0,
+    open_issues_count: 0,
+    created_at: "2026-01-01T00:00:00Z",
+    pushed_at: "2026-06-01T00:00:00Z",
+    license: null,
+    is_template: false,
     ...overrides
   };
 }
+
+describe("character cache key", () => {
+  it("uses the v5 namespace for typed inventory records", () => {
+    expect(getCharacterCacheKey("ConalH")).toBe("github-character:v5:ConalH");
+  });
+});
 
 describe("parseGitHubUsername", () => {
   it("accepts usernames, handles, and GitHub profile URLs", () => {
