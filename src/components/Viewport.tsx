@@ -52,29 +52,6 @@ export function Viewport({
       <InnRoom />
       <TrophyWall displays={sheet.trophyRoom.displays} />
 
-      <div className="status-orbs">
-        <div
-          className="orb hp"
-          title={`Hitpoints: ${sheet.skills.Hitpoints}`}
-          aria-label={`Hitpoints ${sheet.skills.Hitpoints}`}
-        >
-          <span className="orb-num">{sheet.skills.Hitpoints}</span>
-          <span className="orb-globe" aria-hidden="true">
-            <HeartIcon />
-          </span>
-        </div>
-        <div
-          className="orb prayer"
-          title={`Prayer: ${sheet.skills.Prayer}`}
-          aria-label={`Prayer ${sheet.skills.Prayer}`}
-        >
-          <span className="orb-num">{sheet.skills.Prayer}</span>
-          <span className="orb-globe" aria-hidden="true">
-            <SunburstIcon />
-          </span>
-        </div>
-      </div>
-
       <div className="player">
         <p className="overhead-text">{overhead}</p>
         {prestige.capeSkill ? (
@@ -169,27 +146,48 @@ export function Viewport({
           </div>
         ) : null}
 
-        <p className="nameplate">
-          {prestige.tier >= 2 ? (
-            <span
-              className={
-                prestige.tier >= 3 ? "prestige-crown gold" : "prestige-crown silver"
-              }
-              title={`${prestige.title} of the realm`}
-              aria-label={`${prestige.title} of the realm`}
-            >
-              <CrownIcon />
-            </span>
-          ) : null}
-          <a href={sheet.user.html_url} target="_blank" rel="noreferrer">
-            {displayName}
-          </a>{" "}
-          <span className="nameplate-level">(level-{sheet.combatLevel})</span>
-        </p>
-        <p className="class-line">
-          {prestige.title ? `${prestige.title} ` : ""}
-          {sheet.characterClass}
-        </p>
+        <div className="character-caption">
+          <p className="nameplate">
+            {prestige.tier >= 2 ? (
+              <span
+                className={
+                  prestige.tier >= 3 ? "prestige-crown gold" : "prestige-crown silver"
+                }
+                title={`${prestige.title} of the realm`}
+                aria-label={`${prestige.title} of the realm`}
+              >
+                <CrownIcon />
+              </span>
+            ) : null}
+            <a href={sheet.user.html_url} target="_blank" rel="noreferrer">
+              {displayName}
+            </a>{" "}
+            <span className="nameplate-level">(level-{sheet.combatLevel})</span>
+          </p>
+          <p className="class-line">
+            {prestige.title ? `${prestige.title} ` : ""}
+            {sheet.characterClass}
+          </p>
+        </div>
+
+        <div className="status-orbs">
+          <div
+            className="orb hp"
+            title={`Hitpoints: ${sheet.skills.Hitpoints}`}
+            aria-label={`Hitpoints ${sheet.skills.Hitpoints}`}
+          >
+            <span className="orb-num">{sheet.skills.Hitpoints}</span>
+            <span className="orb-globe" aria-hidden="true"><HeartIcon /></span>
+          </div>
+          <div
+            className="orb prayer"
+            title={`Prayer: ${sheet.skills.Prayer}`}
+            aria-label={`Prayer ${sheet.skills.Prayer}`}
+          >
+            <span className="orb-num">{sheet.skills.Prayer}</span>
+            <span className="orb-globe" aria-hidden="true"><SunburstIcon /></span>
+          </div>
+        </div>
       </div>
 
       <p className="build-tag" aria-hidden="true">

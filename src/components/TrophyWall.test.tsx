@@ -1,3 +1,5 @@
+// @ts-expect-error The app intentionally omits Node typings; Vitest supplies this at runtime.
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { WallDisplay } from "../lib/trophyRoom";
@@ -88,5 +90,14 @@ describe("TrophyWall", () => {
     expect(markup.match(/type="button"/g)).toHaveLength(15);
     expect(markup).not.toContain(" disabled");
     expect(markup).not.toContain("<a");
+  });
+
+  it("uses separate populated cape rails and leaves empty groups bare", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(styles).toMatch(/\.cape-hook-group\s*\{[^}]*position:\s*relative/s);
+    expect(styles).toMatch(/\.cape-hook-group::before\s*\{[^}]*background:[^}]*box-shadow:/s);
+    expect(styles).toMatch(/\.cape-hook-group\[data-display-count="0"\]::before\s*\{[^}]*display:\s*none/s);
+    expect(styles).not.toContain(".wall-zone.cape-hooks::before");
   });
 });

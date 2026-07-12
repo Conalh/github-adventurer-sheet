@@ -56,7 +56,7 @@ describe("Viewport", () => {
 
     expect(markup).toContain('class="inn-room"');
     expect(markup).toContain('class="inn-central-rug"');
-    expect(markup).toContain('class="inn-counter"');
+    expect(markup).toContain('class="inn-furniture inn-counter"');
     expect(markup).toContain('class="trophy-wall"');
     expect(markup).not.toContain('class="inn-back-wall"');
     expect(markup).not.toContain('class="inn-stonework"');
@@ -115,7 +115,33 @@ describe("Viewport", () => {
     expect(styles).toMatch(/\.wall-zone\.trophy-shelf\s*\{[^}]*right:\s*0[^}]*width:\s*190px/s);
     expect(styles).toMatch(/\.inn-table\s*\{[^}]*bottom:\s*18%/s);
     expect(styles).toMatch(/\.inn-counter\s*\{[^}]*right:\s*29%[^}]*left:\s*29%/s);
-    expect(styles).toMatch(/\.status-orbs\s*\{[^}]*bottom:\s*112px[^}]*display:\s*flex/s);
+    expect(styles).toMatch(/\.status-orbs\s*\{[^}]*position:\s*relative[^}]*display:\s*flex[^}]*transform:\s*none/s);
+  });
+
+  it("orders character text and status into one collision-free stack", () => {
+    const markup = renderToStaticMarkup(<Viewport sheet={fixture} say={() => undefined} />);
+    const overhead = markup.indexOf('class="overhead-text"');
+    const portrait = markup.indexOf('class="player-hitbox"');
+    const caption = markup.indexOf('class="character-caption"');
+    const status = markup.indexOf('class="status-orbs"');
+
+    expect(overhead).toBeGreaterThan(-1);
+    expect(overhead).toBeLessThan(portrait);
+    expect(portrait).toBeLessThan(caption);
+    expect(caption).toBeLessThan(status);
+    expect(markup).toContain('<div class="character-caption"><p class="nameplate">');
+    expect(markup).toContain('</p><p class="class-line">Master Code Warrior</p></div>');
+  });
+
+  it("frames character copy and keeps status orbs in flow", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(styles).toMatch(/\.overhead-text\s*\{[^}]*padding:[^}]*background:[^}]*line-height:/s);
+    expect(styles).toMatch(/\.character-caption\s*\{[^}]*padding:[^}]*background:[^}]*border:/s);
+    expect(styles).toMatch(/\.nameplate\s*\{[^}]*margin:\s*0[^}]*line-height:/s);
+    expect(styles).toMatch(/\.class-line\s*\{[^}]*margin:\s*0[^}]*line-height:/s);
+    expect(styles).toMatch(/\.status-orbs\s*\{[^}]*position:\s*relative[^}]*transform:\s*none/s);
+    expect(styles).not.toMatch(/\.status-orbs\s*\{[^}]*bottom:\s*112px/s);
   });
 
   it("adapts display rails at the 941px desktop lower bound", () => {
