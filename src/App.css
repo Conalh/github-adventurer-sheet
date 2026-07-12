@@ -1717,8 +1717,17 @@ button:focus-visible > .rs-tooltip {
   color: var(--rarity-legendary);
 }
 
-.worn-slot.filled.rarity-epic svg,
-.worn-slot.filled.rarity-legendary svg {
+.worn-slot.filled.fallback {
+  color: #81796a;
+}
+
+.worn-slot.filled.fallback svg {
+  filter: none;
+  opacity: 0.72;
+}
+
+.worn-slot.filled:not(.fallback).rarity-epic svg,
+.worn-slot.filled:not(.fallback).rarity-legendary svg {
   filter: drop-shadow(0 0 5px currentColor);
 }
 
@@ -1771,6 +1780,51 @@ button:focus-visible > .rs-tooltip {
 
 .inventory-item:hover {
   filter: brightness(1.16);
+}
+
+.inventory-glyph {
+  max-width: calc(100% - 8px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-glyph.kind-currency {
+  color: #ffd95a;
+}
+
+.inventory-glyph.kind-license {
+  color: #ddd3b5;
+}
+
+.inventory-glyph.kind-language {
+  color: #74cfff;
+}
+
+.inventory-glyph.kind-topic {
+  color: #8fe38c;
+}
+
+.inventory-glyph.kind-archive {
+  color: #b7a184;
+}
+
+.inventory-glyph.kind-template {
+  color: #d6a2ff;
+}
+
+.inventory-count {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  color: #ffeb67;
+  font-size: 0.68rem;
+  line-height: 1;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
 }
 
 /* --------------------------------------------------------------------------

@@ -3,24 +3,27 @@ import {
   calculateCharacterSheet,
   clampCombatLevel,
   getAchievements,
-  getAmuletRarity,
-  getCapeRarity,
-  getMainHandRarity,
-  getOffHandRarity,
+  getCharacterCacheKey,
   getPrestige,
   getQuestDifficulty,
-  getRingRarity,
   levelFromScore,
   parseGitHubUsername,
-  rarityFromThresholds,
   rsXpForLevel,
   skillXpFromScore,
   SKILL_NAMES,
   type SkillName,
-  type EquipmentItem,
   type GitHubRepo,
   type GitHubUser
 } from "./githubCharacter";
+import {
+  getAmuletRarity,
+  getCapeRarity,
+  getMainHandRarity,
+  getOffHandRarity,
+  getRingRarity,
+  rarityFromThresholds,
+  type EquipmentItem
+} from "./equipment";
 
 const baseUser: GitHubUser = {
   login: "ConalH",
@@ -34,7 +37,8 @@ const baseUser: GitHubUser = {
   created_at: "2020-01-01T00:00:00Z",
   followers: 10,
   following: 3,
-  public_repos: 2
+  public_repos: 2,
+  public_gists: 0
 };
 
 function repo(overrides: Partial<GitHubRepo>): GitHubRepo {
@@ -53,9 +57,21 @@ function repo(overrides: Partial<GitHubRepo>): GitHubRepo {
     fork: false,
     updated_at: "2026-06-01T00:00:00Z",
     homepage: null,
+    size: 0,
+    open_issues_count: 0,
+    created_at: "2026-01-01T00:00:00Z",
+    pushed_at: "2026-06-01T00:00:00Z",
+    license: null,
+    is_template: false,
     ...overrides
   };
 }
+
+describe("character cache key", () => {
+  it("uses the v5 namespace for typed inventory records", () => {
+    expect(getCharacterCacheKey("ConalH")).toBe("github-character:v5:ConalH");
+  });
+});
 
 describe("parseGitHubUsername", () => {
   it("accepts usernames, handles, and GitHub profile URLs", () => {
@@ -197,6 +213,16 @@ describe("calculateCharacterSheet", () => {
     for (const skill of SKILL_NAMES) {
       expect(sheet.skills[skill]).toBe(levelFromScore(sheet.skillScores[skill]));
     }
+
+    expect(sheet.equipment.items).toHaveLength(11);
+    expect(new Set(sheet.equipment.items.map((item) => item.slot)).size).toBe(11);
+    expect(sheet.equipment.items.find((item) => item.slot === "Head")?.name).toBe(
+      "Helm of react"
+    );
+    expect(sheet.equipment.backpack[0]).toMatchObject({
+      id: "currency:gold",
+      kind: "currency"
+    });
   });
 
   it("handles empty and missing repository fields without fake repo data", () => {
@@ -218,7 +244,16 @@ describe("calculateCharacterSheet", () => {
     expect(findSlot(sheet.equipment.items, "Amulet").name).toBe(
       "Unattuned Amulet"
     );
-    expect(sheet.equipment.backpack).toEqual(["No supplies discovered"]);
+    expect(sheet.equipment.backpack).toEqual([
+      {
+        id: "currency:gold",
+        kind: "currency",
+        name: "Gold Pouch",
+        abbreviation: "GP",
+        count: 0,
+        examine: "A pouch containing exactly 0 gold pieces."
+      }
+    ]);
   });
 
   it("returns intentional fallback equipment when there are no public repos", () => {
@@ -234,6 +269,13 @@ describe("calculateCharacterSheet", () => {
     );
     expect(findSlot(sheet.equipment.items, "Off hand").name).toBe("Bare arm");
     expect(findSlot(sheet.equipment.items, "Ring").name).toBe("Bare finger");
+    expect(sheet.equipment.items).toHaveLength(11);
+    expect(findSlot(sheet.equipment.items, "Head").name).toBe("Unadorned Hood");
+    expect(findSlot(sheet.equipment.items, "Ammo").name).toBe("Empty Quiver");
+    expect(findSlot(sheet.equipment.items, "Body").name).toBe("Cloth Tunic");
+    expect(findSlot(sheet.equipment.items, "Legs").name).toBe("Patched Trousers");
+    expect(findSlot(sheet.equipment.items, "Hands").name).toBe("Bare Hands");
+    expect(findSlot(sheet.equipment.items, "Feet").name).toBe("Barefoot");
     for (const item of sheet.equipment.items) {
       if (item.slot !== "Cape") {
         expect(item.rarity).toBe("Common");
