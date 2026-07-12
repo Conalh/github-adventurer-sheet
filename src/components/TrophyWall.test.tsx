@@ -42,6 +42,7 @@ describe("TrophyWall", () => {
     expect(markup.match(/type="button"/g)).toHaveLength(2);
     expect(markup).toContain('data-skill="Strength"');
     expect(markup).toContain('data-trimmed="true"');
+    expect(markup).toContain('class="skillcape-art skillcape-art--wall"');
     expect(markup).toContain('class="skillcape-art__garment"');
     expect(markup).not.toContain('class="wall-display-art" aria-hidden="true"></span>');
     expect(markup).toContain('data-trophy-art="stars"');

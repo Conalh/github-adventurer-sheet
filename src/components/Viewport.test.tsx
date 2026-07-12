@@ -64,8 +64,21 @@ describe("Viewport", () => {
   it("keeps the nameplate in front of the worn skillcape", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
 
-    expect(styles).toMatch(/\.skillcape\s*\{[^}]*z-index:\s*0/s);
-    expect(styles).toMatch(/\.nameplate\s*\{[^}]*position:\s*relative[^}]*z-index:\s*5/s);
+    expect(styles).toMatch(/\.skillcape\s*\{[^}]*z-index:\s*4/s);
+    expect(styles).toMatch(/\.nameplate\s*\{[^}]*position:\s*relative[^}]*z-index:\s*6/s);
+  });
+
+  it("defines the top-down room and foreground stacking contract", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(styles).toMatch(/\.inn-room\s*\{[^}]*pointer-events:\s*none/s);
+    expect(styles).toMatch(/\.inn-floorboards\s*\{[^}]*repeating-linear-gradient/s);
+    expect(styles).toMatch(/\.inn-central-rug\s*\{[^}]*z-index:\s*1/s);
+    expect(styles).toMatch(/\.skillcape\s*\{[^}]*z-index:\s*4/s);
+    expect(styles).toMatch(/\.player-avatar\s*\{[^}]*z-index:\s*5/s);
+    expect(styles).toMatch(/\.nameplate\s*\{[^}]*z-index:\s*6/s);
+    expect(styles).not.toContain(".inn-back-wall");
+    expect(styles).not.toContain(".wall-display.cape .wall-display-art");
   });
 
   it("does not let empty player-layer space block wall display pointers", () => {
