@@ -67,7 +67,7 @@ export function GameClient({
       <i className="rivet br" aria-hidden="true" />
 
       <div className="client-body">
-        <Viewport sheet={sheet} />
+        <Viewport sheet={sheet} say={say} />
 
         <aside className="sidebar">
           <div className="tab-strip" role="tablist" aria-label="Interface tabs">
