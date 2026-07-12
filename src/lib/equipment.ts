@@ -80,6 +80,20 @@ export function normaliseCount(value: number): number {
   return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;
 }
 
+export function calculateReputationGold(followers: number, stars: number): number {
+  const reputation = Math.sqrt(normaliseCount(followers) * normaliseCount(stars));
+  return Math.round((50 * reputation) / (1 + reputation / 280_000));
+}
+
+const stackFormatter = new Intl.NumberFormat("en", {
+  notation: "compact",
+  maximumFractionDigits: 1
+});
+
+export function formatStackCount(count: number): string {
+  return stackFormatter.format(normaliseCount(count));
+}
+
 export function rarityFromThresholds(
   value: number,
   [uncommon, rare, epic, legendary]: [number, number, number, number]
@@ -176,6 +190,129 @@ function maxRepo(
 
 function pluralize(count: number, noun: string): string {
   return `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
+}
+
+function exactCount(count: number): string {
+  return normaliseCount(count).toLocaleString("en");
+}
+
+function sortBackpackItems(items: BackpackItem[]): BackpackItem[] {
+  return items.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+function currencyItem(gold: number): BackpackItem {
+  const count = normaliseCount(gold);
+  return {
+    id: "currency:gold",
+    kind: "currency",
+    name: "Gold Pouch",
+    abbreviation: "GP",
+    count,
+    examine: `A pouch containing exactly ${exactCount(count)} gold pieces.`
+  };
+}
+
+function licenseName(spdxId: string): string {
+  const upper = spdxId.toUpperCase();
+  if (upper === "MIT") return "MIT Scroll";
+  if (upper.startsWith("GPL-")) return "GPL Grimoire";
+  if (upper.startsWith("APACHE-")) return "Apache Writ";
+  if (upper === "UNLICENSE") return "Unlicense Talisman";
+  return `${spdxId} Scroll`;
+}
+
+function buildLicenseItems(repos: EquipmentRepoInput[]): BackpackItem[] {
+  const licenses = new Map<string, { spdxId: string; count: number }>();
+  for (const repo of repos) {
+    const spdxId = repo.licenseSpdxId?.trim();
+    if (!spdxId || spdxId.toUpperCase() === "NOASSERTION") continue;
+    const key = spdxId.toLowerCase();
+    const current = licenses.get(key);
+    if (current) {
+      current.count += 1;
+      if (spdxId.localeCompare(current.spdxId) < 0) current.spdxId = spdxId;
+    }
+    else licenses.set(key, { spdxId, count: 1 });
+  }
+
+  return sortBackpackItems([...licenses.entries()].map(([key, { spdxId, count }]) => ({
+    id: `license:${key}`,
+    kind: "license" as const,
+    name: licenseName(spdxId),
+    abbreviation: spdxId.toUpperCase(),
+    count,
+    examine: `A stack of exactly ${exactCount(count)} repositories bearing the ${spdxId} license.`
+  })));
+}
+
+function supplyItem(kind: "language" | "topic", entry: CountedName): BackpackItem | null {
+  const name = entry.name.trim();
+  const count = normaliseCount(entry.count);
+  if (!name || count === 0) return null;
+  return {
+    id: `${kind}:${name.toLowerCase()}`,
+    kind,
+    name: kind === "language" ? `${name} Runes` : `${name} Map`,
+    abbreviation: name.slice(0, 3).toUpperCase(),
+    count,
+    examine: kind === "language"
+      ? `Runes drawn from exactly ${exactCount(count)} ${name} repositories.`
+      : `A map marked by exactly ${exactCount(count)} ${name} topic declarations.`
+  };
+}
+
+function buildSupplyItems(
+  languageCounts: CountedName[],
+  topicCounts: CountedName[]
+): BackpackItem[] {
+  const items = [
+    ...languageCounts.map((entry) => supplyItem("language", entry)),
+    ...topicCounts.map((entry) => supplyItem("topic", entry))
+  ].filter((item): item is BackpackItem => item !== null);
+
+  return items.sort((a, b) =>
+    b.count - a.count ||
+    a.id.slice(a.id.indexOf(":") + 1).localeCompare(b.id.slice(b.id.indexOf(":") + 1)) ||
+    (a.kind === b.kind ? 0 : a.kind === "language" ? -1 : 1)
+  );
+}
+
+function buildArchiveItems(repos: EquipmentRepoInput[]): BackpackItem[] {
+  const count = repos.filter((repo) => repo.archived).length;
+  return count === 0 ? [] : [{
+    id: "archive:repos",
+    kind: "archive",
+    name: "Dusty Tomes",
+    abbreviation: "AR",
+    count,
+    examine: `Exactly ${exactCount(count)} archived repositories preserved as dusty tomes.`
+  }];
+}
+
+function buildTemplateItems(repos: EquipmentRepoInput[]): BackpackItem[] {
+  const count = repos.filter((repo) => repo.isTemplate).length;
+  return count === 0 ? [] : [{
+    id: "template:repos",
+    kind: "template",
+    name: "Template Stamps",
+    abbreviation: "TP",
+    count,
+    examine: `Exactly ${exactCount(count)} repository templates ready to stamp.`
+  }];
+}
+
+function buildBackpack(input: EquipmentInput): BackpackItem[] {
+  const originalStars = input.repos
+    .filter((repo) => !repo.fork)
+    .reduce((sum, repo) => sum + normaliseCount(repo.stars), 0);
+  const gold = calculateReputationGold(input.user.followers, originalStars);
+  return [
+    currencyItem(gold),
+    ...buildLicenseItems(input.repos),
+    ...buildSupplyItems(input.languageCounts, input.topicCounts),
+    ...buildArchiveItems(input.repos),
+    ...buildTemplateItems(input.repos)
+  ].slice(0, 28);
 }
 
 function accountAgeCape(accountAgeYears: number): string {
@@ -369,5 +506,5 @@ export function buildEquipment(input: EquipmentInput): CharacterEquipment {
     Ring: ring
   };
 
-  return { items: EQUIPMENT_SLOT_ORDER.map((slot) => bySlot[slot]), backpack: [] };
+  return { items: EQUIPMENT_SLOT_ORDER.map((slot) => bySlot[slot]), backpack: buildBackpack(input) };
 }

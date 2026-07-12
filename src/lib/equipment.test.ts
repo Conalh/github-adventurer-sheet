@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildEquipment,
+  calculateReputationGold,
   EQUIPMENT_SLOT_ORDER,
   getAmmoRarity,
   getAmuletRarity,
@@ -14,6 +15,7 @@ import {
   getOffHandRarity,
   getRingRarity,
   normaliseCount,
+  formatStackCount,
   rarityFromThresholds,
   type EquipmentInput,
   type EquipmentItem,
@@ -138,7 +140,7 @@ describe("buildEquipment", () => {
     expect(findSlot(equipment.items, "Cape").name).toBe("Veteran Account Cape");
     expect(findSlot(equipment.items, "Amulet").name).toBe("TypeScript Amulet");
     expect(findSlot(equipment.items, "Ring").name).toBe("Signet of atlas");
-    expect(equipment.backpack).toEqual([]);
+    expect(equipment.backpack[0]).toMatchObject({ id: "currency:gold", count: 15_794 });
   });
 
   it("rejects invalid, zero, and negative maintenance spans", () => {
@@ -208,5 +210,72 @@ describe("buildEquipment", () => {
       expect(findSlot(items, "Legs").name).toBe("Greaves of alpha");
       expect(findSlot(items, "Hands").name).toBe("Gauntlets of alpha");
     }
+  });
+});
+
+describe("backpack", () => {
+  it.each([
+    [0, 0, 0],
+    [4, 2, 141],
+    [200, 500, 15_794],
+    [311_435, 250_769, 6_993_251]
+  ])("mints calibrated gold", (followers, stars, expected) => {
+    expect(calculateReputationGold(followers, stars)).toBe(expected);
+  });
+
+  it.each([
+    [141, "141"],
+    [1_000, "1K"],
+    [15_794, "15.8K"],
+    [1_000_000, "1M"],
+    [6_993_251, "7M"]
+  ])("formats %i as %s", (count, expected) => {
+    expect(formatStackCount(count)).toBe(expected);
+  });
+
+  it("builds grouped, deterministic backpack stacks in priority order and caps at 28", () => {
+    const repos = [
+      equipmentRepo({ fullName: "owner/mit-a", stars: 2, licenseSpdxId: "MIT", archived: true }),
+      equipmentRepo({ fullName: "owner/mit-b", stars: 999, licenseSpdxId: " mit ", fork: true, isTemplate: true }),
+      equipmentRepo({ fullName: "owner/none", licenseSpdxId: "NOASSERTION" }),
+      equipmentRepo({ fullName: "owner/empty", licenseSpdxId: " " }),
+      equipmentRepo({ fullName: "owner/apache", licenseSpdxId: "Apache-2.0" })
+    ];
+    const languageCounts = [
+      { name: "Go", count: 8 },
+      ...Array.from({ length: 20 }, (_, index) => ({ name: `Language ${index}`, count: 1 }))
+    ];
+    const topicCounts = [
+      { name: "Go", count: 8 },
+      ...Array.from({ length: 10 }, (_, index) => ({ name: `Topic ${index}`, count: 1 }))
+    ];
+
+    const backpack = buildEquipment(equipmentInput({ repos, languageCounts, topicCounts })).backpack;
+
+    expect(backpack).toHaveLength(28);
+    expect(backpack.slice(0, 3).map(({ id, count }) => ({ id, count }))).toEqual([
+      { id: "currency:gold", count: 141 },
+      { id: "license:mit", count: 2 },
+      { id: "license:apache-2.0", count: 1 }
+    ]);
+    expect(backpack[1]).toMatchObject({ name: "MIT Scroll", abbreviation: "MIT" });
+    expect(backpack.find((item) => item.id === "language:go")).toMatchObject({ count: 8 });
+    expect(backpack.find((item) => item.id === "topic:go")).toMatchObject({ count: 8 });
+    expect(backpack.indexOf(backpack.find((item) => item.id === "language:go")!)).toBeLessThan(
+      backpack.indexOf(backpack.find((item) => item.id === "topic:go")!)
+    );
+    expect(backpack.map((item) => item.id)).not.toContain("license:noassertion");
+    expect(backpack.every((item) => item.examine.includes(item.count.toLocaleString("en")))).toBe(true);
+  });
+
+  it("keeps optional archive and template stacks after supplies", () => {
+    const backpack = buildEquipment(equipmentInput({
+      repos: [equipmentRepo({ archived: true, isTemplate: true })]
+    })).backpack;
+    expect(backpack.map((item) => item.id)).toEqual([
+      "currency:gold",
+      "archive:repos",
+      "template:repos"
+    ]);
   });
 });
