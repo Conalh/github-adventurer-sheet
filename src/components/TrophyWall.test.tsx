@@ -100,4 +100,16 @@ describe("TrophyWall", () => {
     expect(styles).toMatch(/\.cape-hook-group\[data-display-count="0"\]::before\s*\{[^}]*display:\s*none/s);
     expect(styles).not.toContain(".wall-zone.cape-hooks::before");
   });
+
+  it("raises the active wall display above the player and neighboring awards", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+    const activeItem = styles.match(
+      /\.wall-display-item:hover,\s*\.wall-display-item:focus-within\s*\{[^}]*z-index:\s*(\d+)/s,
+    );
+    const player = styles.match(/\.player\s*\{[^}]*z-index:\s*(\d+)/s);
+
+    expect(activeItem).not.toBeNull();
+    expect(player).not.toBeNull();
+    expect(Number(activeItem?.[1])).toBeGreaterThan(Number(player?.[1]));
+  });
 });

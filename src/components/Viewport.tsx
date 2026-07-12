@@ -83,8 +83,8 @@ export function Viewport({
                 src={pixelAvatar(sheet.user.avatar_url)}
                 alt=""
                 className="player-avatar"
-                width={180}
-                height={180}
+                width={165}
+                height={165}
               />
             ) : (
               <span className="player-avatar avatar-fallback">
