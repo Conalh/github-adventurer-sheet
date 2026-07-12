@@ -69,6 +69,20 @@ Existing trophy records, tiers, evidence, and tooltips remain unchanged. Their p
 
 All displays remain visible for a celebrity-scale profile such as Torvalds. Placement uses explicit semantic zones with predictable wrapping. Decorative furniture may yield space to earned displays, but earned displays are never hidden or capped.
 
+### Trophy Artwork
+
+Trophies must not share one generic colored silhouette. A reusable `TrophyArt` SVG component renders category-specific artwork while preserving the existing trophy record and material tier:
+
+- **Star Relic:** a faceted celestial star or crystal on a compact stand;
+- **Fellowship Standard:** a hanging heraldic banner with a fellowship crest;
+- **Forked Anvil:** a squat anvil carrying a branching fork mark;
+- **Veteran's Plaque:** an aged shield-shaped wall plaque with service marks; and
+- **Steward's Lantern:** a metal lantern with a visible warm flame.
+
+The presentation is intentionally hybrid. Standards and plaques read as wall-mounted achievements, while relics, anvils, and lanterns read as dimensional objects placed on shelves or furniture. Each category keeps a distinct silhouette at small sizes.
+
+Bronze, silver, gold, runite, and legendary tiers change the artifact's material palette, trim, and restrained glow without changing its identity. Color is supplementary: silhouette and emblem must continue to distinguish the category. An unknown trophy category falls back to a neutral shield-and-gem artifact rather than the current lamp-shaped placeholder.
+
 ## Visual Depth and Layering
 
 The scene uses a small, explicit stacking model:
