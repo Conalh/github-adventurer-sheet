@@ -48,6 +48,16 @@ describe("Viewport", () => {
     expect(styles).toMatch(/\.nameplate\s*\{[^}]*position:\s*relative[^}]*z-index:\s*5/s);
   });
 
+  it("does not let empty player-layer space block wall display pointers", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(styles).toMatch(/\.player\s*\{[^}]*pointer-events:\s*none/s);
+    expect(styles).toMatch(/\.player-hitbox\s*\{[^}]*pointer-events:\s*auto/s);
+    expect(styles).toMatch(/\.context-menu\s*\{[^}]*pointer-events:\s*auto/s);
+    expect(styles).toMatch(/\.nameplate a\s*\{[^}]*pointer-events:\s*auto/s);
+    expect(styles).toMatch(/\.inn-hearth\s*\{[^}]*pointer-events:\s*none/s);
+  });
+
   it("removes obsolete outdoor-only scene styles", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
 

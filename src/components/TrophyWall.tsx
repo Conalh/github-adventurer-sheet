@@ -16,13 +16,13 @@ export function TrophyWall({ displays }: TrophyWallProps) {
   return (
     <div className="trophy-wall">
       {WALL_ZONES.map((zone) => (
-        <section aria-label={zone.label} key={zone.id}>
-          <ul>
+        <section aria-label={zone.label} className={`wall-zone ${zone.id}`} key={zone.id}>
+          <ul className="wall-display-list">
             {displays.filter((display) => display.zone === zone.id).map((display) => (
               <li className="wall-display-item" key={display.id}>
                 <button
                   type="button"
-                  className={`wall-display ${display.kind} ${display.material?.toLowerCase() ?? "skillcape"}`}
+                  className={`wall-display ${display.kind} ${display.material?.toLowerCase() ?? "cape-display"}`}
                   aria-label={`${display.name}. ${display.evidence}. ${display.description}`}
                   data-display-id={display.id}
                   data-equipped={display.equipped || undefined}

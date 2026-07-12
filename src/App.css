@@ -569,7 +569,7 @@ p {
 .banner-left { left: 10%; }
 .banner-right { right: 10%; }
 .inn-floor { position: absolute; inset: 73% 0 0; z-index: 0; background: repeating-linear-gradient(90deg, #392316 0 78px, #21140d 79px 83px); border-top: 8px solid #1b100a; }
-.inn-hearth { position: absolute; right: 7%; bottom: 15%; z-index: 3; width: 112px; height: 132px; background: linear-gradient(90deg, #4b4038, #716359 50%, #40362f); border: 4px solid #241b16; }
+.inn-hearth { position: absolute; right: 7%; bottom: 15%; z-index: 3; width: 112px; height: 132px; background: linear-gradient(90deg, #4b4038, #716359 50%, #40362f); border: 4px solid #241b16; pointer-events: none; }
 .hearth-mantle { position: absolute; top: -10px; right: -12px; left: -12px; height: 14px; background: #5b351d; box-shadow: 0 4px 0 #23130b; }
 .hearth-fire { position: absolute; right: 23px; bottom: 10px; left: 23px; height: 54px; background: radial-gradient(ellipse at 50% 100%, #fff08a 0 12%, #ff9a2e 30%, #9e2e12 58%, transparent 62%); filter: drop-shadow(0 0 15px rgba(255,145,45,.6)); }
 .trophy-wall { position: absolute; z-index: 3; top: 18%; right: 9%; left: 9%; display: grid; grid-template-columns: minmax(260px, 1.35fr) minmax(180px, .8fr); grid-template-areas: "capes upper" "capes shelf"; gap: 22px 34px; align-items: start; }
@@ -600,6 +600,7 @@ p {
   gap: 0.55rem;
   justify-items: center;
   padding: clamp(1.6rem, 4vh, 3rem) 1rem 1rem;
+  pointer-events: none;
 }
 
 .overhead-text {
@@ -772,6 +773,7 @@ p {
   border: 0;
   background: transparent;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .player-hitbox:hover .player-avatar {
@@ -795,6 +797,7 @@ p {
   background: #26221c;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
   transform: translateX(-50%);
+  pointer-events: auto;
 }
 
 .context-title {
@@ -876,6 +879,7 @@ p {
 }
 
 .nameplate a {
+  pointer-events: auto;
   color: inherit;
   text-decoration: none;
 }

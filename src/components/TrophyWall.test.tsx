@@ -42,6 +42,15 @@ describe("TrophyWall", () => {
     expect(markup.match(/type="button"/g)).toHaveLength(2);
   });
 
+  it("attaches the zone and list layout classes used to keep displays separated", () => {
+    const markup = renderToStaticMarkup(<TrophyWall displays={displays} />);
+
+    expect(markup).toContain('<section aria-label="Cape hooks" class="wall-zone cape-hooks">');
+    expect(markup.match(/class="wall-display-list"/g)).toHaveLength(3);
+    expect(markup).toContain('class="wall-display cape cape-display"');
+    expect(markup).not.toContain('class="wall-display cape skillcape"');
+  });
+
   it("renders each display exactly once without disabled buttons or links", () => {
     const manyDisplays: WallDisplay[] = Array.from({ length: 15 }, (_, index) => ({
       ...displays[1],
