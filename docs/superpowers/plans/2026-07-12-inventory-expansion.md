@@ -718,11 +718,14 @@ npm test
 Expected: all unit tests pass. Do not commit yet; `EquipmentTab` still needs the
 typed-backpack compatibility update before the build can pass.
 
-- [ ] **Step 6: Add the minimal typed-backpack compatibility render**
+- [ ] **Step 6: Add the minimal exhaustive renderer compatibility update**
 
-Before committing, update the existing backpack map in `EquipmentTab.tsx` to use
-`item.id`, `item.name`, `item.abbreviation`, and `item.examine`. Do not add badge
-markup or styling yet. Run:
+Before committing, make `SLOT_ICONS` and `SLOT_AREAS` exhaustive for all 11
+`EquipmentSlot` values and remove the hard-coded `EMPTY_SLOTS` render. Render the
+11 typed items with the existing filled-slot treatment; do not add fallback
+classes yet. Update the backpack map to use `item.id`, `item.name`,
+`item.abbreviation`, and `item.examine`; do not add badge markup or styling yet.
+Run:
 
 ```bash
 npm test
@@ -801,11 +804,11 @@ expect(markup).toContain("Gold pouch");
 npm test -- src/components/tabs/EquipmentTab.test.tsx
 ```
 
-Expected: FAIL because six slots still use static empty spans and no badge exists.
+Expected: FAIL because fallback classes and count-badge markup do not exist yet.
 
-- [ ] **Step 3: Generalize all slot maps and remove `EMPTY_SLOTS`**
+- [ ] **Step 3: Add the fallback treatment to the generalized slot renderer**
 
-Import all 11 icons and define exhaustive records:
+Confirm the exhaustive maps created in Task 5 contain these exact icon entries:
 
 ```ts
 const SLOT_ICONS: Record<EquipmentSlot, IconComponent> = {
@@ -823,10 +826,10 @@ const SLOT_ICONS: Record<EquipmentSlot, IconComponent> = {
 };
 ```
 
-Add matching `SLOT_AREAS` entries and render only
-`sheet.equipment.items.map(...)`. Build the class name from rarity plus
-`item.isFallback ? " fallback" : ""`. Keep the current tooltip and chat examine
-copy for every item.
+Confirm matching `SLOT_AREAS` entries exist and the renderer uses only
+`sheet.equipment.items.map(...)`. Add `item.isFallback ? " fallback" : ""` to
+the existing rarity class name. Keep the current tooltip and chat examine copy
+for every item.
 
 - [ ] **Step 4: Add typed backpack markup**
 
