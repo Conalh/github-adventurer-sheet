@@ -505,12 +505,15 @@ p {
 
 .status-orbs {
   position: absolute;
-  top: 14px;
-  right: 132px;
+  top: auto;
+  right: auto;
+  bottom: 112px;
+  left: 50%;
   z-index: 2;
-  display: grid;
+  display: flex;
   gap: 8px;
-  justify-items: end;
+  align-items: center;
+  transform: translateX(-50%);
 }
 
 .orb {
@@ -568,14 +571,14 @@ p {
 .inn-wall--north { top: 0; right: 0; left: 0; height: 42px; }
 .inn-wall--west { top: 0; bottom: 0; left: 0; width: 34px; }
 .inn-wall--east { top: 0; right: 0; bottom: 0; width: 34px; }
-.inn-table { position: absolute; z-index: 3; top: 28%; width: 22%; height: 21%; border: 4px solid #2b190f; background: repeating-linear-gradient(90deg, #5a3821 0 28px, #3b2417 29px 32px); box-shadow: 8px 10px 0 rgba(0,0,0,.34); }
+.inn-table { position: absolute; z-index: 3; bottom: 18%; width: 22%; height: 21%; border: 4px solid #2b190f; background: repeating-linear-gradient(90deg, #5a3821 0 28px, #3b2417 29px 32px); box-shadow: 8px 10px 0 rgba(0,0,0,.34); }
 .inn-table--left { left: 7%; }
 .inn-table--right { right: 7%; }
 .inn-table i { position: absolute; right: 10%; bottom: -38px; left: 10%; height: 26px; background: #392116; box-shadow: 0 7px 0 #1d100a; }
 .inn-table b { position: absolute; bottom: -54px; width: 24px; height: 24px; border-radius: 50%; background: #6b3025; box-shadow: inset 0 0 0 4px #351711; }
 .inn-table b:nth-of-type(1) { left: 8%; }
 .inn-table b:nth-of-type(2) { right: 8%; }
-.inn-counter { position: absolute; z-index: 3; right: 8%; bottom: 4%; left: 8%; height: 72px; border: 5px solid #28170e; background: repeating-linear-gradient(90deg, #5c3a24 0 58px, #3c2517 59px 62px); box-shadow: 0 -8px 0 #795239; }
+.inn-counter { position: absolute; z-index: 3; right: 29%; bottom: 4%; left: 29%; height: 72px; border: 5px solid #28170e; background: repeating-linear-gradient(90deg, #5c3a24 0 58px, #3c2517 59px 62px); box-shadow: 0 -8px 0 #795239; }
 .inn-hearth { position: absolute; right: 4%; bottom: 24%; z-index: 3; width: 84px; height: 112px; border: 4px solid #241b16; background: #625249; pointer-events: none; }
 .hearth-mantle { position: absolute; top: -10px; right: -12px; left: -12px; height: 14px; background: #5b351d; box-shadow: 0 4px 0 #23130b; }
 .hearth-fire { position: absolute; right: 23px; bottom: 10px; left: 23px; height: 54px; background: radial-gradient(ellipse at 50% 100%, #fff08a 0 12%, #ff9a2e 30%, #9e2e12 58%, transparent 62%); filter: drop-shadow(0 0 15px rgba(255,145,45,.6)); }
@@ -603,17 +606,26 @@ p {
 .trophy-art[data-mount="wall"] { height: 82px; }
 .trophy-art[data-mount="shelf"] { margin-top: 8px; height: 68px; }
 
-.trophy-wall { position: absolute; inset: 52px 42px 86px; z-index: 3; pointer-events: none; }
+.trophy-wall { position: absolute; inset: 52px 42px 86px; pointer-events: none; }
 .wall-zone { position: absolute; min-width: 0; pointer-events: none; }
-.wall-zone.cape-hooks { top: 0; right: 29%; left: 29%; }
-.wall-zone.upper-wall { top: 17%; right: 4%; width: 22%; }
-.wall-zone.trophy-shelf { top: 17%; left: 4%; width: 22%; }
+.wall-zone.cape-hooks { top: 0; right: 0; left: 0; }
+.wall-zone.upper-wall { top: 26%; left: 0; width: 260px; }
+.wall-zone.trophy-shelf { top: 26%; right: 0; width: 190px; }
 .wall-display-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px 18px; margin: 0; padding: 18px 12px; list-style: none; }
 .wall-display-item { position: relative; pointer-events: auto; }
 .wall-display { position: relative; width: 58px; min-height: 86px; padding: 0; border: 0; background: transparent; color: #fff5d6; cursor: help; }
+.wall-zone.cape-hooks .wall-display-list { flex-wrap: nowrap; gap: 8px; padding: 12px 0; }
+.wall-zone.cape-hooks .wall-display { width: 44px; min-height: 65px; }
+.wall-zone.cape-hooks .skillcape-art--wall { width: 44px; height: 65px; }
+.wall-zone.cape-hooks .wall-display-item:nth-child(6) { margin-left: 240px; }
 .wall-display:focus-visible { outline: 3px solid var(--hud-yellow); outline-offset: 4px; }
 .wall-display.bronze { color: #b56a36; } .wall-display.silver { color: #c8d0d8; } .wall-display.gold { color: #f1c84b; } .wall-display.runite { color: #56b9c2; } .wall-display.legendary { color: #b86cff; }
-.wall-display-tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; z-index: 60; display: none; width: 230px; padding: 9px 11px; border: 2px solid #8b744b; background: #17130f; color: #eee4cc; text-align: left; box-shadow: 0 8px 20px rgba(0,0,0,.65); transform: translateX(-50%); }
+.wall-display-tooltip { position: absolute; top: calc(100% + 8px); bottom: auto; left: 50%; z-index: 60; display: none; width: 230px; padding: 9px 11px; border: 2px solid #8b744b; background: #17130f; color: #eee4cc; text-align: left; box-shadow: 0 8px 20px rgba(0,0,0,.65); transform: translateX(-50%); }
+.wall-zone.cape-hooks .wall-display-tooltip { top: calc(100% + 8px); }
+.wall-zone.cape-hooks .wall-display-item:first-child .wall-display-tooltip,
+.wall-zone.upper-wall .wall-display-item:first-child .wall-display-tooltip { left: 0; transform: none; }
+.wall-zone.cape-hooks .wall-display-item:last-child .wall-display-tooltip,
+.wall-zone.trophy-shelf .wall-display-item:last-child .wall-display-tooltip { right: 0; left: auto; transform: none; }
 .wall-display-tooltip > * { display: block; } .wall-display-tooltip strong { color: var(--hud-yellow); } .wall-display-tooltip em { color: var(--hud-green); }
 .wall-display:hover .wall-display-tooltip, .wall-display:focus-visible .wall-display-tooltip { display: block; }
 .wall-zone.cape-hooks::before { content: ""; position: absolute; top: 7px; right: 3px; left: 3px; height: 9px; background: #654126; box-shadow: 0 4px 0 #2b180e; }
@@ -1810,11 +1822,6 @@ button:focus-visible > .rs-tooltip {
 
   .viewport {
     min-height: 360px;
-  }
-
-
-  .status-orbs {
-    right: 106px;
   }
 
   .rs-skill-grid {

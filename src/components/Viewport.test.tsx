@@ -81,6 +81,29 @@ describe("Viewport", () => {
     expect(styles).not.toContain(".wall-display.cape .wall-display-art");
   });
 
+  it("reserves a portrait-safe desktop lane for the maximum display set", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(styles).toMatch(/\.wall-zone\.cape-hooks\s*\{[^}]*right:\s*0[^}]*left:\s*0/s);
+    expect(styles).toMatch(/\.wall-zone\.cape-hooks \.wall-display-list\s*\{[^}]*flex-wrap:\s*nowrap[^}]*gap:\s*8px/s);
+    expect(styles).toMatch(/\.wall-zone\.cape-hooks \.wall-display\s*\{[^}]*width:\s*44px[^}]*min-height:\s*65px/s);
+    expect(styles).toMatch(/\.wall-zone\.cape-hooks \.wall-display-item:nth-child\(6\)\s*\{[^}]*margin-left:\s*240px/s);
+    expect(styles).toMatch(/\.wall-zone\.upper-wall\s*\{[^}]*left:\s*0[^}]*width:\s*260px/s);
+    expect(styles).toMatch(/\.wall-zone\.trophy-shelf\s*\{[^}]*right:\s*0[^}]*width:\s*190px/s);
+    expect(styles).toMatch(/\.inn-table\s*\{[^}]*bottom:\s*18%/s);
+    expect(styles).toMatch(/\.inn-counter\s*\{[^}]*right:\s*29%[^}]*left:\s*29%/s);
+    expect(styles).toMatch(/\.status-orbs\s*\{[^}]*bottom:\s*112px[^}]*display:\s*flex/s);
+  });
+
+  it("lets visible wall tooltips escape the player stack without clipping", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(styles).toMatch(/\.trophy-wall\s*\{(?=[^}]*pointer-events:\s*none)(?![^}]*z-index:)[^}]*\}/s);
+    expect(styles).toMatch(/\.player\s*\{[^}]*z-index:\s*10/s);
+    expect(styles).toMatch(/\.wall-display-tooltip\s*\{[^}]*top:\s*calc\(100% \+ 8px\)[^}]*bottom:\s*auto[^}]*z-index:\s*60/s);
+    expect(styles).toMatch(/\.wall-zone\.cape-hooks \.wall-display-tooltip\s*\{[^}]*top:\s*calc\(100% \+ 8px\)/s);
+  });
+
   it("does not let empty player-layer space block wall display pointers", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
 
