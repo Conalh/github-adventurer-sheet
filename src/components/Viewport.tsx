@@ -106,8 +106,8 @@ export function Viewport({
                 src={pixelAvatar(sheet.user.avatar_url)}
                 alt=""
                 className="player-avatar"
-                width={220}
-                height={220}
+                width={180}
+                height={180}
               />
             ) : (
               <span className="player-avatar avatar-fallback">
@@ -201,7 +201,7 @@ export function Viewport({
 
 function pixelAvatar(avatarUrl: string): string {
   const separator = avatarUrl.includes("?") ? "&" : "?";
-  return `${avatarUrl}${separator}s=96`;
+  return `${avatarUrl}${separator}s=460`;
 }
 
 function truncate(value: string, max: number): string {

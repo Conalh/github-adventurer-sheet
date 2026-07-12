@@ -841,13 +841,13 @@ p {
   position: relative;
   z-index: 5;
   display: block;
-  width: clamp(160px, 24vw, 220px);
+  width: clamp(150px, 20vw, 180px);
   height: auto;
   aspect-ratio: 1;
   border: 2px solid rgba(0, 0, 0, 0.55);
   border-radius: 4px;
   object-fit: cover;
-  image-rendering: pixelated;
+  image-rendering: auto;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
 
@@ -1786,6 +1786,28 @@ button:focus-visible > .rs-tooltip {
 
   .embers {
     display: none;
+  }
+}
+
+@media (min-width: 941px) {
+  .client-body {
+    height: 520px;
+  }
+
+  .viewport {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .sidebar {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .tab-panel {
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
 

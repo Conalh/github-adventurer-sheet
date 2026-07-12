@@ -28,6 +28,27 @@ const fixture = {
 } as unknown as CharacterSheet;
 
 describe("Viewport", () => {
+  it("requests a high-resolution avatar and renders it at the compact size", () => {
+    const withAvatar = {
+      ...fixture,
+      user: {
+        ...fixture.user,
+        avatar_url: "https://avatars.githubusercontent.com/u/1?v=4",
+      },
+    } as CharacterSheet;
+    const markup = renderToStaticMarkup(
+      <Viewport sheet={withAvatar} say={() => undefined} />,
+    );
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    expect(markup).toContain("https://avatars.githubusercontent.com/u/1?v=4&amp;s=460");
+    expect(markup).toContain('width="180"');
+    expect(markup).toContain('height="180"');
+    expect(styles).toMatch(/\.player-avatar\s*\{[^}]*width:\s*clamp\(150px,\s*20vw,\s*180px\)/s);
+    expect(styles).toMatch(/\.player-avatar\s*\{[^}]*image-rendering:\s*auto/s);
+    expect(styles).not.toMatch(/\.player-avatar\s*\{[^}]*image-rendering:\s*pixelated/s);
+  });
+
   it("renders the guild inn without outdoor scene layers", () => {
     const markup = renderToStaticMarkup(
       <Viewport sheet={fixture} say={() => undefined} />,
