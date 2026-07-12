@@ -483,73 +483,9 @@ p {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
 }
 
-.scene-sky {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 56%;
-  background: linear-gradient(
-    180deg,
-    #16203c 0%,
-    #33395e 42%,
-    #8c5638 78%,
-    #e2a05a 100%
-  );
-}
 
-.scene-hills {
-  position: absolute;
-  right: 0;
-  bottom: 43%;
-  left: 0;
-  height: 20%;
-  background:
-    radial-gradient(58% 100% at 22% 100%, #242c1e 59%, transparent 60%),
-    radial-gradient(66% 120% at 78% 100%, #1d2418 59%, transparent 60%);
-}
 
-.scene-ground {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 44%;
-  background:
-    radial-gradient(3px 2px at 18% 30%, rgba(0, 0, 0, 0.3), transparent 70%),
-    radial-gradient(3px 2px at 44% 64%, rgba(255, 255, 255, 0.05), transparent 70%),
-    radial-gradient(3px 2px at 70% 40%, rgba(0, 0, 0, 0.28), transparent 70%),
-    radial-gradient(3px 2px at 88% 72%, rgba(255, 255, 255, 0.04), transparent 70%),
-    linear-gradient(180deg, #46512d 0%, #2f381f 45%, #242b18 100%);
-}
 
-.scene-stars {
-  position: absolute;
-  top: 24px;
-  left: 30px;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: #fff;
-  opacity: 0.7;
-  box-shadow:
-    70px 22px 0 #ffffffb0,
-    150px -6px 0 #ffffff8a,
-    216px 40px 0 #fff,
-    300px 8px 0 #ffffff99,
-    360px 52px 0 1px #fffbe6,
-    442px -2px 0 #ffffff8a,
-    500px 30px 0 #ffffffc4,
-    570px 64px 0 #ffffff7a,
-    640px 12px 0 #fff,
-    710px 44px 0 #ffffff96,
-    120px 78px 0 #ffffff6e,
-    250px 96px 0 #ffffff85,
-    390px 108px 0 #ffffff70,
-    530px 96px 0 #ffffff8f,
-    660px 88px 0 #ffffff66;
-  animation: star-twinkle 3.4s ease-in-out infinite alternate;
-}
 
 @keyframes star-twinkle {
   from {
@@ -561,93 +497,15 @@ p {
   }
 }
 
-.scene-tree {
-  position: absolute;
-  width: 90px;
-  height: 110px;
-}
 
-.scene-tree.left {
-  bottom: 38%;
-  left: 4%;
-  transform: scale(0.72);
-  filter: brightness(0.55);
-}
 
-.scene-tree.right {
-  right: 6%;
-  bottom: 10%;
-  transform: scale(1.15);
-}
 
-.scene-tree .canopy {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 90px;
-  height: 74px;
-  background:
-    radial-gradient(38% 42% at 28% 66%, #2c4a20 0 99%, transparent),
-    radial-gradient(42% 48% at 70% 62%, #27421d 0 99%, transparent),
-    radial-gradient(46% 52% at 48% 38%, #33552a 0 99%, transparent);
-  transform: translateX(-50%);
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
-}
 
-.scene-tree .trunk {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 12px;
-  height: 44px;
-  background: linear-gradient(90deg, #4a3620, #2e2013);
-  border-radius: 0 0 3px 3px;
-  transform: translateX(-50%);
-}
 
-.scene-rock {
-  position: absolute;
-  background: radial-gradient(circle at 35% 28%, #8b8676, #565246 60%, #35322a);
-  border-radius: 46% 54% 48% 52% / 60% 58% 42% 40%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
 
-.scene-rock.a {
-  bottom: 7%;
-  left: 12%;
-  width: 46px;
-  height: 26px;
-}
 
-.scene-rock.b {
-  bottom: 5%;
-  left: 19%;
-  width: 26px;
-  height: 16px;
-}
 
-.campfire {
-  position: absolute;
-  bottom: 13%;
-  left: 66%;
-  width: 60px;
-  height: 60px;
-}
 
-.fire-glow {
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  width: 120px;
-  height: 60px;
-  background: radial-gradient(
-    50% 55% at 50% 60%,
-    rgba(255, 158, 64, 0.4),
-    transparent 70%
-  );
-  transform: translateX(-50%);
-  animation: glow-pulse 1.7s ease-in-out infinite alternate;
-}
 
 @keyframes glow-pulse {
   from {
@@ -659,47 +517,11 @@ p {
   }
 }
 
-.campfire .log {
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  width: 40px;
-  height: 7px;
-  background: linear-gradient(180deg, #5b422a, #33241a);
-  border-radius: 3px;
-}
 
-.campfire .log.a {
-  transform: translateX(-50%) rotate(18deg);
-}
 
-.campfire .log.b {
-  transform: translateX(-50%) rotate(-16deg);
-}
 
-.campfire .flame {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform-origin: 50% 100%;
-  border-radius: 50% 50% 50% 50% / 64% 64% 36% 36%;
-}
 
-.campfire .flame.outer {
-  width: 20px;
-  height: 30px;
-  background: linear-gradient(180deg, #ffdd67 0%, #ff9a2e 55%, #e05a14 100%);
-  transform: translateX(-50%);
-  animation: flame-flicker 0.6s ease-in-out infinite alternate;
-}
 
-.campfire .flame.inner {
-  width: 10px;
-  height: 16px;
-  background: linear-gradient(180deg, #fff8c4, #ffd24a);
-  transform: translateX(-50%);
-  animation: flame-flicker 0.45s ease-in-out infinite alternate-reverse;
-}
 
 @keyframes flame-flicker {
   from {
@@ -760,80 +582,12 @@ p {
   background: radial-gradient(circle at 35% 28%, #d9fbff, #3fb5c4 62%, #17727e);
 }
 
-.minimap {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
-  width: 108px;
-  height: 108px;
-  overflow: hidden;
-  border-radius: 50%;
-  background:
-    radial-gradient(40% 34% at 30% 36%, #4c5a30 0 60%, transparent 61%),
-    radial-gradient(46% 38% at 72% 66%, #3d4a28 0 60%, transparent 61%),
-    radial-gradient(24% 20% at 62% 26%, #2c3550 0 60%, transparent 61%),
-    #37411f;
-  box-shadow:
-    0 0 0 2px #6a6354,
-    0 0 0 4px var(--edge-dark),
-    inset 0 0 18px rgba(0, 0, 0, 0.55);
-}
 
-.minimap-path {
-  position: absolute;
-  top: 48%;
-  left: -12%;
-  width: 130%;
-  height: 9px;
-  background: #a5906b;
-  transform: rotate(-14deg);
-  opacity: 0.85;
-}
 
-.minimap-blob {
-  position: absolute;
-  border-radius: 50%;
-}
 
-.minimap-blob.a {
-  top: 14px;
-  left: 16px;
-  width: 22px;
-  height: 14px;
-  background: #24304e;
-}
 
-.minimap-blob.b {
-  right: 14px;
-  bottom: 18px;
-  width: 18px;
-  height: 12px;
-  background: #55663a;
-}
 
-.minimap-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #fff;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.9);
-}
 
-.minimap-compass {
-  position: absolute;
-  top: 3px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--hud-orange);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-shadow: 1px 1px 0 #000;
-}
 
 .inn-back-wall { position: absolute; inset: 0 0 27%; z-index: 0; background: linear-gradient(#403225, #2b2119); }
 .inn-stonework { position: absolute; inset: 0 0 38%; background: repeating-linear-gradient(0deg, transparent 0 34px, rgba(0,0,0,.24) 35px 37px), repeating-linear-gradient(90deg, #51463d 0 72px, #413830 73px 76px); }
@@ -888,60 +642,12 @@ p {
 }
 
 /* --------------------------------------------------------------------------
-   Prestige: skillcapes, fireworks, xp drops, aurora, phoenix, crowns
+   Prestige: skillcapes, xp drops, crowns
    -------------------------------------------------------------------------- */
 
-.viewport.grandmaster .scene-sky {
-  background: linear-gradient(
-    180deg,
-    #0a1130 0%,
-    #1f2a55 45%,
-    #7c4a33 80%,
-    #d8934f 100%
-  );
-}
 
-.viewport.grandmaster .scene-stars {
-  animation-duration: 2.2s;
-}
 
-.scene-aurora {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 46%;
-  background:
-    radial-gradient(
-      60% 120% at 25% -20%,
-      rgba(63, 208, 160, 0.3),
-      transparent 60%
-    ),
-    radial-gradient(
-      55% 130% at 65% -25%,
-      rgba(138, 108, 240, 0.26),
-      transparent 60%
-    ),
-    radial-gradient(
-      40% 100% at 88% -10%,
-      rgba(63, 180, 208, 0.2),
-      transparent 60%
-    );
-  filter: blur(7px);
-  animation: aurora-drift 14s ease-in-out infinite alternate;
-}
 
-.shooting-star {
-  position: absolute;
-  top: 13%;
-  left: 72%;
-  width: 110px;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0));
-  opacity: 0;
-  animation: shoot 9s linear 3s infinite;
-}
 
 .skillcape {
   position: absolute;
@@ -1036,78 +742,10 @@ p {
   }
 }
 
-.firework {
-  position: absolute;
-  z-index: 3;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  opacity: 0;
-  animation: burst 1.7s ease-out forwards;
-}
 
-.firework.f1 {
-  top: 28%;
-  left: 28%;
-  animation-delay: 0.5s;
-}
 
-.firework.f2 {
-  top: 17%;
-  left: 57%;
-  animation-delay: 1.4s;
-}
 
-.firework.f3 {
-  top: 33%;
-  left: 74%;
-  animation-delay: 2.3s;
-}
 
-.pet-phoenix {
-  position: absolute;
-  bottom: 21%;
-  left: 59.5%;
-  z-index: 1;
-  width: 3px;
-  height: 3px;
-  background: transparent;
-  filter: drop-shadow(0 0 5px rgba(255, 154, 46, 0.55));
-  animation: phoenix-bob 2.2s ease-in-out infinite alternate;
-  box-shadow:
-    12px 0 0 0 #ffd24a,
-    18px 0 0 0 #ffd24a,
-    12px 3px 0 0 #ff9a2e,
-    15px 3px 0 0 #ffd24a,
-    18px 3px 0 0 #ff9a2e,
-    9px 6px 0 0 #ff9a2e,
-    12px 6px 0 0 #ffd24a,
-    15px 6px 0 0 #ffd24a,
-    18px 6px 0 0 #ffd24a,
-    21px 6px 0 0 #ff9a2e,
-    3px 9px 0 0 #ff9a2e,
-    6px 9px 0 0 #ffd24a,
-    9px 9px 0 0 #17140f,
-    12px 9px 0 0 #ffd24a,
-    15px 9px 0 0 #ffd24a,
-    18px 9px 0 0 #ffd24a,
-    21px 9px 0 0 #ff9a2e,
-    6px 12px 0 0 #ffd24a,
-    9px 12px 0 0 #ffd24a,
-    12px 12px 0 0 #ffd24a,
-    15px 12px 0 0 #ff9a2e,
-    18px 12px 0 0 #ff9a2e,
-    21px 12px 0 0 #e05a14,
-    24px 12px 0 0 #e05a14,
-    9px 15px 0 0 #ff9a2e,
-    12px 15px 0 0 #ff9a2e,
-    15px 15px 0 0 #e05a14,
-    21px 15px 0 0 #e05a14,
-    24px 15px 0 0 #ff9a2e,
-    27px 15px 0 0 #e05a14,
-    9px 18px 0 0 #17140f,
-    15px 18px 0 0 #17140f;
-}
 
 .prestige-crown {
   display: inline-flex;
@@ -2219,18 +1857,9 @@ button:focus-visible > .rs-tooltip {
     min-height: 360px;
   }
 
-  .minimap {
-    width: 84px;
-    height: 84px;
-  }
 
   .status-orbs {
     right: 106px;
-  }
-
-  .scene-tree.left,
-  .scene-rock.b {
-    display: none;
   }
 
   .rs-skill-grid {

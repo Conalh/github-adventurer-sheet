@@ -47,4 +47,18 @@ describe("Viewport", () => {
     expect(styles).toMatch(/\.skillcape\s*\{[^}]*z-index:\s*0/s);
     expect(styles).toMatch(/\.nameplate\s*\{[^}]*position:\s*relative[^}]*z-index:\s*5/s);
   });
+
+  it("removes obsolete outdoor-only scene styles", () => {
+    const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
+
+    for (const selector of [
+      ".scene-sky",
+      ".campfire",
+      ".minimap",
+      ".firework",
+      ".pet-phoenix",
+    ]) {
+      expect(styles).not.toContain(selector);
+    }
+  });
 });
