@@ -85,6 +85,18 @@ export type Achievement = {
   goal: number;
 };
 
+export type PrestigeTier = 0 | 1 | 2 | 3;
+
+export type PrestigeTitle = "Adept" | "Master" | "Grandmaster";
+
+export type Prestige = {
+  tier: PrestigeTier;
+  title: PrestigeTitle | null;
+  ninetyNines: SkillName[];
+  capeSkill: SkillName | null;
+  trimmed: boolean;
+};
+
 export type RepositoryMetrics = {
   totalRepos: number;
   originalRepos: number;
@@ -107,6 +119,7 @@ export type CharacterSheet = {
   metrics: RepositoryMetrics;
   skills: Record<SkillName, number>;
   skillScores: Record<SkillName, number>;
+  prestige: Prestige;
   strongestSkill: Exclude<SkillName, "Hitpoints">;
   characterClass: string;
   totalLevel: number;
@@ -345,6 +358,49 @@ export function clampCombatLevel(level: number): number {
   return Math.max(3, Math.min(126, level));
 }
 
+export function getPrestige(input: {
+  skills: Record<SkillName, number>;
+  skillScores: Record<SkillName, number>;
+  totalLevel: number;
+}): Prestige {
+  const ninetyNines = SKILL_NAMES.filter(
+    (skill) => input.skills[skill] >= 99
+  );
+
+  const capeSkill =
+    [...ninetyNines].sort((left, right) => {
+      const scoreGap = input.skillScores[right] - input.skillScores[left];
+
+      if (scoreGap !== 0) {
+        return scoreGap;
+      }
+
+      return SKILL_NAMES.indexOf(left) - SKILL_NAMES.indexOf(right);
+    })[0] ?? null;
+
+  let tier: PrestigeTier = 0;
+  let title: PrestigeTitle | null = null;
+
+  if (ninetyNines.length >= 3 || input.totalLevel >= 650) {
+    tier = 3;
+    title = "Grandmaster";
+  } else if (ninetyNines.length >= 1 || input.totalLevel >= 550) {
+    tier = 2;
+    title = "Master";
+  } else if (input.totalLevel >= 400) {
+    tier = 1;
+    title = "Adept";
+  }
+
+  return {
+    tier,
+    title,
+    ninetyNines,
+    capeSkill,
+    trimmed: ninetyNines.length >= 2
+  };
+}
+
 export function calculateCombatLevel(skills: Pick<
   Record<SkillName, number>,
   "Attack" | "Strength" | "Defence" | "Ranged" | "Magic" | "Hitpoints"
@@ -406,6 +462,8 @@ export function calculateCharacterSheet(
       .filter((language): language is string => Boolean(language))
   );
   const topicCounts = getTopCounts(repos.flatMap((repo) => getRepoTopics(repo)));
+  const totalLevel = SKILL_NAMES.reduce((sum, skill) => sum + skills[skill], 0);
+  const prestige = getPrestige({ skills, skillScores, totalLevel });
 
   return {
     user,
@@ -413,12 +471,20 @@ export function calculateCharacterSheet(
     metrics,
     skills,
     skillScores,
+    prestige,
     strongestSkill,
     characterClass: CLASS_BY_SKILL[strongestSkill],
-    totalLevel: SKILL_NAMES.reduce((sum, skill) => sum + skills[skill], 0),
+    totalLevel,
     combatLevel: calculateCombatLevel(skills),
     quests: getTopQuests(repos),
-    equipment: getEquipment(repos, metrics.accountAgeYears, languageCounts, topicCounts, now),
+    equipment: getEquipment(
+      repos,
+      metrics.accountAgeYears,
+      languageCounts,
+      topicCounts,
+      now,
+      prestige
+    ),
     languageCounts,
     topicCounts
   };
@@ -447,7 +513,7 @@ export async function getGitHubCharacter(
 }
 
 export function getCharacterCacheKey(username: string): string {
-  return `github-character:v3:${username}`;
+  return `github-character:v4:${username}`;
 }
 
 async function fetchRepos(
@@ -691,7 +757,8 @@ function getEquipment(
   accountAgeYears: number,
   languageCounts: Array<{ name: string; count: number }>,
   topicCounts: Array<{ name: string; count: number }>,
-  now: Date
+  now: Date,
+  prestige: Prestige
 ): CharacterEquipment {
   const mostStarred = maxRepo(repos, (repo) => repo.stargazers_count);
   const mostForked = maxRepo(repos, (repo) => repo.forks_count);
@@ -757,17 +824,26 @@ function getEquipment(
         rarity: "Common"
       };
 
-  const cape: EquipmentItem = {
-    slot: "Cape",
-    name: getAccountAgeCape(accountAgeYears),
-    detail:
-      accountAgeYears >= 1
-        ? `Woven over ${Math.floor(accountAgeYears).toLocaleString()} year${
-            Math.floor(accountAgeYears) === 1 ? "" : "s"
-          } of service`
-        : "Freshly woven this very year",
-    rarity: getCapeRarity(accountAgeYears)
-  };
+  const cape: EquipmentItem = prestige.capeSkill
+    ? {
+        slot: "Cape",
+        name: `${prestige.capeSkill} Skillcape${prestige.trimmed ? " (t)" : ""}`,
+        detail: prestige.trimmed
+          ? `Earned at level 99 ${prestige.capeSkill}, trimmed by a second mastery`
+          : `Earned at level 99 ${prestige.capeSkill}`,
+        rarity: "Legendary"
+      }
+    : {
+        slot: "Cape",
+        name: getAccountAgeCape(accountAgeYears),
+        detail:
+          accountAgeYears >= 1
+            ? `Woven over ${Math.floor(accountAgeYears).toLocaleString()} year${
+                Math.floor(accountAgeYears) === 1 ? "" : "s"
+              } of service`
+            : "Freshly woven this very year",
+        rarity: getCapeRarity(accountAgeYears)
+      };
 
   const amulet: EquipmentItem = mostUsedLanguage
     ? {

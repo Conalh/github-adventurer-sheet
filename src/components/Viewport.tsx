@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import type { CharacterSheet } from "../lib/githubCharacter";
+import { useEffect, useState, type CSSProperties } from "react";
+import { skillXpFromScore, type CharacterSheet } from "../lib/githubCharacter";
 import type { ChatMessage } from "./Chatbox";
-import { HeartIcon, SunburstIcon } from "./icons";
+import { CrownIcon, HeartIcon, SunburstIcon, SKILL_COLORS } from "./icons";
 
 export function Viewport({
   sheet,
@@ -15,6 +15,8 @@ export function Viewport({
   const overhead = sheet.user.bio
     ? truncate(sheet.user.bio, 90)
     : "Every repo leaves a mark.";
+  const { prestige } = sheet;
+  const grandmaster = prestige.tier >= 3;
 
   useEffect(() => {
     if (!menuOpen) {
@@ -40,9 +42,18 @@ export function Viewport({
   };
 
   return (
-    <div className="viewport" aria-label="Character scene">
+    <div
+      className={grandmaster ? "viewport grandmaster" : "viewport"}
+      aria-label="Character scene"
+    >
       <div className="scene-sky" aria-hidden="true" />
       <span className="scene-stars" aria-hidden="true" />
+      {grandmaster ? (
+        <>
+          <span className="scene-aurora" aria-hidden="true" />
+          <span className="shooting-star" aria-hidden="true" />
+        </>
+      ) : null}
       <div className="scene-hills" aria-hidden="true" />
       <div className="scene-ground" aria-hidden="true" />
 
@@ -64,6 +75,17 @@ export function Viewport({
         <i className="flame outer" />
         <i className="flame inner" />
       </span>
+
+      {grandmaster ? <span className="pet-phoenix" aria-hidden="true" /> : null}
+
+      {prestige.ninetyNines.slice(0, 3).map((skill, index) => (
+        <span
+          key={skill}
+          className={`firework f${index + 1}`}
+          style={{ "--burst-color": SKILL_COLORS[skill] } as CSSProperties}
+          aria-hidden="true"
+        />
+      ))}
 
       <div className="status-orbs">
         <div
@@ -98,6 +120,12 @@ export function Viewport({
 
       <div className="player">
         <p className="overhead-text">{overhead}</p>
+        {prestige.capeSkill ? (
+          <span className="xp-drop" aria-hidden="true">
+            +{skillXpFromScore(sheet.skillScores[prestige.capeSkill]).toLocaleString()}{" "}
+            xp
+          </span>
+        ) : null}
         <button
           type="button"
           className="player-hitbox"
@@ -107,6 +135,22 @@ export function Viewport({
           onClick={() => setMenuOpen((open) => !open)}
         >
           <span className="player-portrait">
+            {prestige.capeSkill ? (
+              <span
+                className={
+                  prestige.trimmed ? "skillcape trimmed" : "skillcape"
+                }
+                style={
+                  {
+                    "--cape-color": SKILL_COLORS[prestige.capeSkill]
+                  } as CSSProperties
+                }
+                aria-hidden="true"
+              >
+                <i className="cape-trim" />
+                <i className="cape-main" />
+              </span>
+            ) : null}
             {sheet.user.avatar_url ? (
               <img
                 src={pixelAvatar(sheet.user.avatar_url)}
@@ -176,12 +220,26 @@ export function Viewport({
         ) : null}
 
         <p className="nameplate">
+          {prestige.tier >= 2 ? (
+            <span
+              className={
+                prestige.tier >= 3 ? "prestige-crown gold" : "prestige-crown silver"
+              }
+              title={`${prestige.title} of the realm`}
+              aria-label={`${prestige.title} of the realm`}
+            >
+              <CrownIcon />
+            </span>
+          ) : null}
           <a href={sheet.user.html_url} target="_blank" rel="noreferrer">
             {displayName}
           </a>{" "}
           <span className="nameplate-level">(level-{sheet.combatLevel})</span>
         </p>
-        <p className="class-line">{sheet.characterClass}</p>
+        <p className="class-line">
+          {prestige.title ? `${prestige.title} ` : ""}
+          {sheet.characterClass}
+        </p>
       </div>
 
       <p className="build-tag" aria-hidden="true">

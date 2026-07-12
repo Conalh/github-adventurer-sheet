@@ -138,6 +138,20 @@ export function HeartIcon(props: IconProps) {
   );
 }
 
+/* Mirrors the .skill-color-* values in App.css; used for skillcape drapes. */
+export const SKILL_COLORS: Record<SkillName, string> = {
+  Attack: "#e8564a",
+  Strength: "#57c25f",
+  Defence: "#8fb6dd",
+  Ranged: "#9ed46a",
+  Magic: "#7fa9ff",
+  Crafting: "#d8a25a",
+  Mining: "#a7b6c2",
+  Smithing: "#c3cbd4",
+  Prayer: "#f6f2df",
+  Hitpoints: "#ff5548"
+};
+
 export const SKILL_ICONS: Record<SkillName, (props: IconProps) => ReactNode> = {
   Attack: SwordIcon,
   Strength: FistIcon,

@@ -79,7 +79,11 @@ export function SkillsTab({
         })}
       </ul>
 
-      <p className="rs-total-cell">
+      <p
+        className={
+          sheet.totalLevel >= 600 ? "rs-total-cell golden" : "rs-total-cell"
+        }
+      >
         Total level:
         <strong>{sheet.totalLevel}</strong>
       </p>

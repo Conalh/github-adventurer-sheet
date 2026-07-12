@@ -129,12 +129,15 @@ function buildOpeningMessages(
   isDemo: boolean
 ): ChatMessage[] {
   const messages: ChatMessage[] = [];
+  const displayName = sheet.user.name || sheet.user.login;
   let id = 1;
 
   messages.push({
     id: id++,
     kind: "welcome",
-    text: "Welcome to GitHub Adventurer Sheet."
+    text: sheet.prestige.title
+      ? `Welcome back, ${sheet.prestige.title} ${displayName}.`
+      : "Welcome to GitHub Adventurer Sheet."
   });
 
   if (isDemo) {
@@ -145,23 +148,40 @@ function buildOpeningMessages(
     });
   }
 
-  messages.push({
-    id: id++,
-    kind: "levelup",
-    text: `Congratulations, you just advanced a ${sheet.strongestSkill} level. Your ${sheet.strongestSkill} level is now ${sheet.skills[sheet.strongestSkill]}.`
-  });
+  if (sheet.prestige.ninetyNines.length > 0) {
+    for (const skill of sheet.prestige.ninetyNines.slice(0, 3)) {
+      messages.push({
+        id: id++,
+        kind: "broadcast",
+        text: `News: ${displayName} has achieved level 99 in ${skill}!`
+      });
+    }
 
-  const earned = getAchievements(sheet.user, sheet.metrics).filter(
-    (achievement) => achievement.earned
-  );
-  const displayName = sheet.user.name || sheet.user.login;
-
-  for (const achievement of earned.slice(0, 3)) {
+    if (sheet.prestige.trimmed) {
+      messages.push({
+        id: id++,
+        kind: "game",
+        text: `Your ${sheet.prestige.capeSkill} Skillcape has been trimmed with gold.`
+      });
+    }
+  } else {
     messages.push({
       id: id++,
-      kind: "broadcast",
-      text: `News: ${displayName} has completed the "${achievement.name}" deed!`
+      kind: "levelup",
+      text: `Congratulations, you just advanced a ${sheet.strongestSkill} level. Your ${sheet.strongestSkill} level is now ${sheet.skills[sheet.strongestSkill]}.`
     });
+
+    const earned = getAchievements(sheet.user, sheet.metrics).filter(
+      (achievement) => achievement.earned
+    );
+
+    for (const achievement of earned.slice(0, 3)) {
+      messages.push({
+        id: id++,
+        kind: "broadcast",
+        text: `News: ${displayName} has completed the "${achievement.name}" deed!`
+      });
+    }
   }
 
   messages.push({

@@ -7,6 +7,7 @@ import {
   getCapeRarity,
   getMainHandRarity,
   getOffHandRarity,
+  getPrestige,
   getQuestDifficulty,
   getRingRarity,
   levelFromScore,
@@ -15,6 +16,7 @@ import {
   rsXpForLevel,
   skillXpFromScore,
   SKILL_NAMES,
+  type SkillName,
   type EquipmentItem,
   type GitHubRepo,
   type GitHubUser
@@ -303,6 +305,104 @@ describe("rarity tiers", () => {
     expect(getRingRarity("2020-01-01T00:00:00Z", now)).toBe("Common");
     expect(getRingRarity("not-a-date", now)).toBe("Common");
     expect(getRingRarity("2027-01-01T00:00:00Z", now)).toBe("Common");
+  });
+});
+
+describe("getPrestige", () => {
+  const flatSkills = (level: number) =>
+    Object.fromEntries(SKILL_NAMES.map((skill) => [skill, level])) as Record<
+      SkillName,
+      number
+    >;
+  const flatScores = (score: number) =>
+    Object.fromEntries(SKILL_NAMES.map((skill) => [skill, score])) as Record<
+      SkillName,
+      number
+    >;
+
+  it("grants grandmaster for three 99s and picks the highest-score cape", () => {
+    const skills = { ...flatSkills(50), Strength: 99, Ranged: 99, Prayer: 99 };
+    const scores = {
+      ...flatScores(100),
+      Strength: 1_500_000,
+      Ranged: 900_000,
+      Prayer: 950_000
+    };
+    const prestige = getPrestige({
+      skills,
+      skillScores: scores,
+      totalLevel: 650
+    });
+
+    expect(prestige.tier).toBe(3);
+    expect(prestige.title).toBe("Grandmaster");
+    expect(prestige.ninetyNines).toEqual(["Strength", "Ranged", "Prayer"]);
+    expect(prestige.capeSkill).toBe("Strength");
+    expect(prestige.trimmed).toBe(true);
+  });
+
+  it("grants master for a single 99, untrimmed", () => {
+    const skills = { ...flatSkills(45), Magic: 99 };
+    const prestige = getPrestige({
+      skills,
+      skillScores: flatScores(10),
+      totalLevel: 500
+    });
+
+    expect(prestige.tier).toBe(2);
+    expect(prestige.title).toBe("Master");
+    expect(prestige.capeSkill).toBe("Magic");
+    expect(prestige.trimmed).toBe(false);
+  });
+
+  it("grades by total level when there are no 99s", () => {
+    const base = {
+      skills: flatSkills(60),
+      skillScores: flatScores(300)
+    };
+
+    expect(getPrestige({ ...base, totalLevel: 660 }).title).toBe("Grandmaster");
+    expect(getPrestige({ ...base, totalLevel: 600 }).title).toBe("Master");
+    expect(getPrestige({ ...base, totalLevel: 450 }).title).toBe("Adept");
+    expect(getPrestige({ ...base, totalLevel: 300 }).title).toBeNull();
+    expect(getPrestige({ ...base, totalLevel: 300 }).tier).toBe(0);
+    expect(getPrestige({ ...base, totalLevel: 300 }).capeSkill).toBeNull();
+  });
+});
+
+describe("skillcape equipment", () => {
+  it("replaces the account cape with a trimmed skillcape for multi-99 heroes", () => {
+    const sheet = calculateCharacterSheet(
+      { ...baseUser, followers: 400_000 },
+      [
+        repo({
+          name: "kernel",
+          stargazers_count: 200_000,
+          forks_count: 60_000,
+          watchers_count: 200_000
+        })
+      ],
+      new Date("2026-07-01T00:00:00Z")
+    );
+
+    expect(sheet.prestige.tier).toBeGreaterThanOrEqual(2);
+    expect(sheet.prestige.ninetyNines.length).toBeGreaterThanOrEqual(2);
+
+    const cape = sheet.equipment.items.find((item) => item.slot === "Cape");
+    expect(cape?.name).toMatch(/Skillcape \(t\)$/);
+    expect(cape?.rarity).toBe("Legendary");
+  });
+
+  it("keeps the account-age cape when no skill is 99", () => {
+    const sheet = calculateCharacterSheet(
+      baseUser,
+      [repo({})],
+      new Date("2026-07-01T00:00:00Z")
+    );
+
+    expect(sheet.prestige.ninetyNines).toEqual([]);
+    const cape = sheet.equipment.items.find((item) => item.slot === "Cape");
+    expect(cape?.name).toBe("Veteran Account Cape");
   });
 });
 
