@@ -57,6 +57,9 @@ describe("Viewport", () => {
       ".minimap",
       ".firework",
       ".pet-phoenix",
+      "@keyframes star-twinkle",
+      "@keyframes glow-pulse",
+      "@keyframes flame-flicker",
     ]) {
       expect(styles).not.toContain(selector);
     }

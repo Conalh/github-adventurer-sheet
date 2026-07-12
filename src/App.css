@@ -487,15 +487,6 @@ p {
 
 
 
-@keyframes star-twinkle {
-  from {
-    opacity: 0.45;
-  }
-
-  to {
-    opacity: 0.85;
-  }
-}
 
 
 
@@ -507,31 +498,10 @@ p {
 
 
 
-@keyframes glow-pulse {
-  from {
-    opacity: 0.65;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
 
 
 
 
-
-
-
-@keyframes flame-flicker {
-  from {
-    transform: translateX(-52%) scale(1, 0.92) rotate(-2deg);
-  }
-
-  to {
-    transform: translateX(-48%) scale(1.05, 1.06) rotate(2deg);
-  }
-}
 
 .status-orbs {
   position: absolute;
