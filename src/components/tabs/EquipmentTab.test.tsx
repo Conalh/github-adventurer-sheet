@@ -1,3 +1,5 @@
+// @ts-expect-error Tests run in Node, but this browser project intentionally omits @types/node.
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { CharacterSheet } from "../../lib/githubCharacter";
@@ -42,5 +44,16 @@ describe("EquipmentTab", () => {
     expect(markup).toContain('class="inventory-count"');
     expect(markup).toContain(">15.8K<");
     expect(markup).toContain("Gold pouch");
+  });
+
+  it("excludes fallback slots from rarity glow selectors", () => {
+    const styles = readFileSync(new URL("../../App.css", import.meta.url), "utf8");
+
+    expect(styles).toContain(
+      ".worn-slot.filled:not(.fallback).rarity-epic svg"
+    );
+    expect(styles).toContain(
+      ".worn-slot.filled:not(.fallback).rarity-legendary svg"
+    );
   });
 });

@@ -1726,8 +1726,8 @@ button:focus-visible > .rs-tooltip {
   opacity: 0.72;
 }
 
-.worn-slot.filled.rarity-epic svg,
-.worn-slot.filled.rarity-legendary svg {
+.worn-slot.filled:not(.fallback).rarity-epic svg,
+.worn-slot.filled:not(.fallback).rarity-legendary svg {
   filter: drop-shadow(0 0 5px currentColor);
 }
 
