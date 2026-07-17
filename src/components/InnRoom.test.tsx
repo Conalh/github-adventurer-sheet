@@ -6,7 +6,8 @@ describe("InnRoom", () => {
   it("renders one inert room with focused illustrated furniture", () => {
     const markup = renderToStaticMarkup(<InnRoom />);
 
-    expect(markup).toContain('class="inn-room"');
+    expect(markup).toContain('class="inn-room inn-room--guild"');
+    expect(markup).toContain('data-realm-tier="1"');
     expect(markup).toContain('aria-hidden="true"');
     expect(markup).toContain('class="inn-wall-frame"');
     expect(markup.match(/class="inn-furniture inn-table inn-table--/g)).toHaveLength(2);

@@ -72,14 +72,14 @@ function repo(overrides: Partial<GitHubRepo>): GitHubRepo {
 describe("character cache key", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("uses the v7 namespace for quest-title character records", () => {
-    expect(getCharacterCacheKey("ConalH")).toBe("github-character:v7:ConalH");
+  it("uses the v8 namespace for original-work impact records", () => {
+    expect(getCharacterCacheKey("ConalH")).toBe("github-character:v8:ConalH");
   });
 
-  it("does not return an unexpired v5 record that lacks trophyRoom", async () => {
+  it("does not return an unexpired v7 record with obsolete impact semantics", async () => {
     const values = new Map<string, string>([[
-      "github-character:v5:ConalH",
-      JSON.stringify({ createdAt: Date.now(), data: { user: { login: "stale-v5" } } }),
+      "github-character:v7:ConalH",
+      JSON.stringify({ createdAt: Date.now(), data: { user: { login: "stale-v7" } } }),
     ]]);
     vi.stubGlobal("window", { localStorage: {
       getItem: (key: string) => values.get(key) ?? null,
@@ -258,7 +258,7 @@ describe("calculateCharacterSheet", () => {
     );
 
     expect(sheet.skills.Attack).toBe(levelFromScore(1 * 8 + 2));
-    expect(sheet.skills.Strength).toBe(levelFromScore(13 * 6 + 3 * 3));
+    expect(sheet.skills.Strength).toBe(levelFromScore(12 * 6 + 3 * 3));
     expect(sheet.skills.Magic).toBe(levelFromScore(2 * 25 + 2 * 2));
     expect(sheet.totalLevel).toBe(
       Object.values(sheet.skills).reduce((total, level) => total + level, 0)
@@ -276,6 +276,32 @@ describe("calculateCharacterSheet", () => {
     expect(sheet.equipment.backpack[0]).toMatchObject({
       id: "currency:gold",
       kind: "currency"
+    });
+  });
+
+  it("does not inherit stars, forks, or watchers from repositories it forked", () => {
+    const sheet = calculateCharacterSheet(
+      baseUser,
+      [
+        repo({ stargazers_count: 12, forks_count: 3, watchers_count: 4 }),
+        repo({
+          id: 2,
+          name: "famous-upstream-fork",
+          fork: true,
+          stargazers_count: 1_000_000,
+          forks_count: 500_000,
+          watchers_count: 1_000_000,
+        }),
+      ],
+      new Date("2026-07-01T00:00:00Z"),
+    );
+
+    expect(sheet.metrics).toMatchObject({
+      originalRepos: 1,
+      forksMade: 1,
+      totalStars: 12,
+      totalForksReceived: 3,
+      totalWatchers: 4,
     });
   });
 

@@ -1,6 +1,17 @@
-export function InnRoom() {
+import type { PrestigeTier } from "../lib/githubCharacter";
+
+type InnRealmTier = Exclude<PrestigeTier, 3>;
+
+export function InnRoom({ realmTier = 1 }: { realmTier?: InnRealmTier }) {
+  const variant =
+    realmTier === 0 ? "roadside" : realmTier === 2 ? "heroes" : "guild";
+
   return (
-    <div className="inn-room" aria-hidden="true">
+    <div
+      className={`inn-room inn-room--${variant}`}
+      data-realm-tier={realmTier}
+      aria-hidden="true"
+    >
       <span className="inn-floorboards">
         <i className="floor-knot floor-knot--one" />
         <i className="floor-knot floor-knot--two" />
@@ -15,6 +26,16 @@ export function InnRoom() {
       <InnHearth />
       <span className="inn-room-detail inn-room-detail--mug" />
       <span className="inn-room-detail inn-room-detail--coins" />
+      {realmTier === 2 ? (
+        <>
+          <span className="heroes-standard heroes-standard--left">
+            <i />
+          </span>
+          <span className="heroes-standard heroes-standard--right">
+            <i />
+          </span>
+        </>
+      ) : null}
     </div>
   );
 }

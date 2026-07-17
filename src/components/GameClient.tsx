@@ -4,6 +4,11 @@ import {
   type CharacterSheet
 } from "../lib/githubCharacter";
 import {
+  getRealmDestinationName,
+  getRealmForPrestige,
+  getRealmImpact,
+} from "../lib/realm";
+import {
   BarChartIcon,
   CrossedSwordsIcon,
   HelmetIcon,
@@ -124,20 +129,31 @@ export function GameClient({
   );
 }
 
-function buildOpeningMessages(
+export function buildOpeningMessages(
   sheet: CharacterSheet,
   isDemo: boolean
 ): ChatMessage[] {
   const messages: ChatMessage[] = [];
   const displayName = sheet.user.name || sheet.user.login;
+  const realm = getRealmForPrestige(sheet.prestige.tier);
+  const impact = getRealmImpact(
+    sheet.prestige.tier,
+    sheet.metrics,
+    sheet.user.followers,
+  );
+  const destination = getRealmDestinationName(realm);
   let id = 1;
 
   messages.push({
     id: id++,
-    kind: "welcome",
-    text: sheet.prestige.title
-      ? `Welcome to World 404, ${sheet.prestige.title} ${displayName}.`
-      : "Welcome to World 404."
+    kind: sheet.prestige.tier === 3 ? "broadcast" : "welcome",
+    text: sheet.prestige.tier === 3
+      ? `World 404 trembles. Grandmaster ${displayName} enters ${destination} with ${impact
+          .map((entry) => `${entry.value} ${entry.label}`)
+          .join(", ")}.`
+      : `${realm.entrance} for ${
+          sheet.prestige.title ? `${sheet.prestige.title} ${displayName}` : displayName
+        }. Welcome to ${destination}.`
   });
 
   if (isDemo) {

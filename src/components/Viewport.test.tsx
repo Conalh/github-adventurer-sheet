@@ -13,8 +13,9 @@ const skills = {
 const fixture = {
   user: {
     login: "adventurer", name: "Adventurer", avatar_url: null, bio: null,
-    html_url: "https://github.com/adventurer",
+    html_url: "https://github.com/adventurer", followers: 0,
   },
+  metrics: { totalRepos: 3, totalStars: 25, totalForksReceived: 4 },
   skills,
   skillScores: { ...skills, Strength: 100_000 },
   prestige: {
@@ -28,6 +29,31 @@ const fixture = {
 } as unknown as CharacterSheet;
 
 describe("Viewport", () => {
+  it("turns Grandmaster impact into a separate Hall of Legends scene", () => {
+    const legend = {
+      ...fixture,
+      user: { ...fixture.user, followers: 312_112 },
+      metrics: {
+        ...fixture.metrics,
+        totalStars: 251_074,
+        totalForksReceived: 64_392,
+      },
+      prestige: { ...fixture.prestige, tier: 3, title: "Grandmaster" },
+    } as CharacterSheet;
+    const markup = renderToStaticMarkup(
+      <Viewport sheet={legend} say={() => undefined} />,
+    );
+
+    expect(markup).toContain('class="viewport realm-legend"');
+    expect(markup).toContain('data-realm-tier="3"');
+    expect(markup).toContain("The Hall of Legends");
+    expect(markup).toContain("251,074");
+    expect(markup).toContain("64,392");
+    expect(markup).toContain("312,112");
+    expect(markup).toContain('class="legend-hall"');
+    expect(markup).not.toContain('class="inn-room');
+  });
+
   it("requests a high-resolution avatar and renders it at the compact size", () => {
     const withAvatar = {
       ...fixture,
@@ -49,12 +75,12 @@ describe("Viewport", () => {
     expect(styles).not.toMatch(/\.player-avatar\s*\{[^}]*image-rendering:\s*pixelated/s);
   });
 
-  it("renders the guild inn without outdoor scene layers", () => {
+  it("renders the upgraded Master inn without outdoor scene layers", () => {
     const markup = renderToStaticMarkup(
       <Viewport sheet={fixture} say={() => undefined} />,
     );
 
-    expect(markup).toContain('class="inn-room"');
+    expect(markup).toContain('class="inn-room inn-room--heroes"');
     expect(markup).toContain('class="inn-central-rug"');
     expect(markup).toContain('class="inn-furniture inn-counter"');
     expect(markup).toContain('class="trophy-wall"');
@@ -65,10 +91,11 @@ describe("Viewport", () => {
     expect(markup).not.toContain('class="scene-tree');
   });
 
-  it("uses inn-appropriate copy for the walk action", () => {
+  it("uses realm-aware copy for the walk action", () => {
     const source = readFileSync(new URL("./Viewport.tsx", import.meta.url), "utf8");
 
-    expect(source).toContain("You cross to the other side of the inn.");
+    expect(source).toContain("You cross ${destination}.");
+    expect(source).not.toContain("the other side of the inn");
     expect(source).not.toContain("meadow");
   });
 

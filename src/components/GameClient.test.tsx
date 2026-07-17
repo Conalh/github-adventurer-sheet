@@ -1,6 +1,8 @@
 // @ts-expect-error The app intentionally omits Node typings; Vitest supplies this at runtime.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import type { CharacterSheet } from "../lib/githubCharacter";
+import { buildOpeningMessages } from "./GameClient";
 
 function mediaBlock(styles: string, query: string): string {
   const start = styles.indexOf(`@media ${query}`);
@@ -16,6 +18,29 @@ function mediaBlock(styles: string, query: string): string {
 }
 
 describe("GameClient desktop frame", () => {
+  it("announces Grandmaster realm impact without capping the evidence", () => {
+    const messages = buildOpeningMessages({
+      user: { login: "torvalds", name: "Linus Torvalds", followers: 312_112 },
+      prestige: {
+        tier: 3,
+        title: "Grandmaster",
+        ninetyNines: ["Strength"],
+        capeSkill: "Strength",
+        trimmed: false,
+      },
+      metrics: {
+        totalStars: 251_074,
+        totalForksReceived: 64_392,
+        totalRepos: 12,
+      },
+    } as CharacterSheet, false);
+
+    expect(messages[0]).toMatchObject({
+      kind: "broadcast",
+      text: "World 404 trembles. Grandmaster Linus Torvalds enters the Hall of Legends with 251,074 stars, 64,392 forks, 312,112 followers.",
+    });
+  });
+
   it("contains tall tabs inside a stable desktop scene", () => {
     const styles = readFileSync(new URL("../App.css", import.meta.url), "utf8");
     const desktop = mediaBlock(styles, "(min-width: 941px)");

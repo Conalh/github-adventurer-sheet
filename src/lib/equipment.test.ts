@@ -182,6 +182,32 @@ describe("buildEquipment", () => {
       .toBe("Aegis of zeta");
   });
 
+  it("does not forge star or fork weapons from inherited upstream popularity", () => {
+    const original = equipmentRepo({
+      name: "original-work",
+      fullName: "owner/original-work",
+      stars: 12,
+      forks: 3,
+    });
+    const famousFork = equipmentRepo({
+      name: "famous-upstream",
+      fullName: "owner/famous-upstream",
+      stars: 1_000_000,
+      forks: 500_000,
+      fork: true,
+    });
+    const equipment = buildEquipment(
+      equipmentInput({ repos: [famousFork, original] }),
+    );
+
+    expect(findSlot(equipment.items, "Main hand").name).toBe(
+      "Blade of original-work",
+    );
+    expect(findSlot(equipment.items, "Off hand").name).toBe(
+      "Aegis of original-work",
+    );
+  });
+
   it("preserves API order for Ring timestamp ties despite alphabetical names", () => {
     const alpha = equipmentRepo({ name: "alpha", fullName: "owner/alpha" });
     const zeta = equipmentRepo({ name: "zeta", fullName: "owner/zeta" });

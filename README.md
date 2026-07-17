@@ -20,6 +20,9 @@ such as [`/character/ConalH`](https://osrshub.pages.dev/character/ConalH).
 
 - **World 404** - a three-step profile connection ritual before the character
   enters the client, with a static reduced-motion path.
+- **Profile realms** - newcomers, Adepts, Masters, and Grandmasters are routed
+  into increasingly prestigious environments. Grandmasters receive a separate
+  Hall of Legends that displays uncapped stars, forks, and follower impact.
 - **Inn viewport** - a profile avatar, overhead bio, combat level, status orbs,
   original CSS scenery, skillcapes, and repository trophies.
 - **Choose Option menus** - click, tap, or right-click the character, trophies,
@@ -95,7 +98,12 @@ React character sheet + shareable route
 
 No random values or hidden server state are involved. The transformation logic
 lives in `src/lib/githubCharacter.ts`, `src/lib/equipment.ts`, and
-`src/lib/trophyRoom.ts`; the rendered client lives under `src/components/`.
+`src/lib/trophyRoom.ts`; realm routing lives in `src/lib/realm.ts`, and the
+rendered client lives under `src/components/`.
+
+Stars, forks received, and watchers count only original repositories. Forked
+upstream repositories still count as exploration, but their popularity is not
+credited to the profile that forked them.
 
 ## Parody and assets
 

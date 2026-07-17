@@ -365,8 +365,17 @@ function formatSize(sizeKb: number): string {
 
 export function buildEquipment(input: EquipmentInput): CharacterEquipment {
   const repos = input.repos;
-  const mostStarred = legacyMaxRepo(repos, (repo) => normaliseCount(repo.stars), true);
-  const mostForked = legacyMaxRepo(repos, (repo) => normaliseCount(repo.forks), true);
+  const originalRepos = repos.filter((repo) => !repo.fork);
+  const mostStarred = legacyMaxRepo(
+    originalRepos,
+    (repo) => normaliseCount(repo.stars),
+    true,
+  );
+  const mostForked = legacyMaxRepo(
+    originalRepos,
+    (repo) => normaliseCount(repo.forks),
+    true,
+  );
   const mostRecent = legacyMaxRepo(repos, (repo) => getTime(repo.updatedAt));
   const mostUsedLanguage = [...input.languageCounts].sort(
     (a, b) => normaliseCount(b.count) - normaliseCount(a.count) || a.name.localeCompare(b.name)

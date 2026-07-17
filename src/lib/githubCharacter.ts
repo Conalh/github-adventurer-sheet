@@ -525,7 +525,7 @@ export async function getGitHubCharacter(
 }
 
 export function getCharacterCacheKey(username: string): string {
-  return `github-character:v7:${username}`;
+  return `github-character:v8:${username}`;
 }
 
 async function fetchRepos(
@@ -627,11 +627,15 @@ function getRepositoryMetrics(
     : 0;
 
   const totalRepos = repos.length;
-  const originalRepos = repos.filter((repo) => !repo.fork).length;
+  const originalRepoRecords = repos.filter((repo) => !repo.fork);
+  const originalRepos = originalRepoRecords.length;
   const forksMade = repos.filter((repo) => repo.fork).length;
-  const totalStars = sum(repos, (repo) => repo.stargazers_count);
-  const totalForksReceived = sum(repos, (repo) => repo.forks_count);
-  const totalWatchers = sum(repos, (repo) => repo.watchers_count);
+  const totalStars = sum(originalRepoRecords, (repo) => repo.stargazers_count);
+  const totalForksReceived = sum(
+    originalRepoRecords,
+    (repo) => repo.forks_count,
+  );
+  const totalWatchers = sum(originalRepoRecords, (repo) => repo.watchers_count);
   const languages = new Set(
     repos
       .map((repo) => repo.language)

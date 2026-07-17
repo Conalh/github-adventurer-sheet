@@ -1,8 +1,13 @@
 import { skillXpFromScore, type CharacterSheet } from "../lib/githubCharacter";
+import {
+  getRealmDestinationName,
+  getRealmForPrestige,
+  getRealmImpact,
+} from "../lib/realm";
 import type { ChatMessage } from "./Chatbox";
 import { ContextMenuButton } from "./ContextMenuButton";
 import { CrownIcon, HeartIcon, SunburstIcon } from "./icons";
-import { InnRoom } from "./InnRoom";
+import { RealmScene } from "./RealmScene";
 import { SkillcapeArt } from "./SkillcapeArt";
 import { TrophyWall } from "./TrophyWall";
 
@@ -18,14 +23,36 @@ export function Viewport({
     ? truncate(sheet.user.bio, 90)
     : "Every repo leaves a mark.";
   const { prestige } = sheet;
-  const grandmaster = prestige.tier >= 3;
+  const realm = getRealmForPrestige(prestige.tier);
+  const destination = getRealmDestinationName(realm);
+  const impact = getRealmImpact(
+    prestige.tier,
+    sheet.metrics,
+    sheet.user.followers,
+  );
 
   return (
     <div
-      className={grandmaster ? "viewport grandmaster" : "viewport"}
-      aria-label="Character scene"
+      className={`viewport realm-${realm.id}`}
+      data-realm-tier={prestige.tier}
+      data-realm={realm.id}
+      aria-label={`${realm.name} character scene`}
     >
-      <InnRoom />
+      <RealmScene tier={prestige.tier} />
+      <section
+        className="realm-plaque"
+        aria-label={`${realm.name} profile impact`}
+      >
+        <span className="realm-instance">World 404 · {realm.instanceLabel}</span>
+        <strong>{realm.name}</strong>
+        <span className="realm-impact">
+          {impact.map((entry) => (
+            <span className="realm-impact-item" key={entry.label}>
+              <b>{entry.value}</b> {entry.label}
+            </span>
+          ))}
+        </span>
+      </section>
       <TrophyWall displays={sheet.trophyRoom.displays} say={say} />
 
       <div className="player">
@@ -47,7 +74,7 @@ export function Viewport({
               onSelect: () =>
                 say(
                   "game",
-                  "You cross to the other side of the inn. The commit history follows you.",
+                  `You cross ${destination}. The commit history follows you.`,
                 ),
             },
             {
