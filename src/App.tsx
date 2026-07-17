@@ -77,6 +77,11 @@ export default function App() {
           </button>
 
           <section className="login-box" aria-label="Summon an adventurer">
+            <p className="world-badge world-badge--masthead">
+              <span>World 404</span>
+              <span>Public profiles</span>
+              <span className="world-online">Online</span>
+            </p>
             <h1 className="login-title">Enter thy GitHub name to play</h1>
             <SearchForm
               initialValue={route.kind === "demo" ? "" : route.username}
@@ -131,10 +136,17 @@ function CharacterPage({
 
   useEffect(() => {
     const controller = new AbortController();
+    let minimumDelayTimer = 0;
+    const minimumConnectionDelay = new Promise<void>((resolve) => {
+      minimumDelayTimer = window.setTimeout(resolve, 900);
+    });
 
     setLoadState({ status: "loading" });
-    getGitHubCharacter(username, { signal: controller.signal })
-      .then((sheet) => setLoadState({ status: "loaded", sheet }))
+    Promise.all([
+      getGitHubCharacter(username, { signal: controller.signal }),
+      minimumConnectionDelay,
+    ])
+      .then(([sheet]) => setLoadState({ status: "loaded", sheet }))
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") {
           return;
@@ -156,7 +168,10 @@ function CharacterPage({
         });
       });
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      window.clearTimeout(minimumDelayTimer);
+    };
   }, [username, attempt]);
 
   useEffect(() => {

@@ -136,8 +136,8 @@ function buildOpeningMessages(
     id: id++,
     kind: "welcome",
     text: sheet.prestige.title
-      ? `Welcome back, ${sheet.prestige.title} ${displayName}.`
-      : "Welcome to GitHub Adventurer Sheet."
+      ? `Welcome to World 404, ${sheet.prestige.title} ${displayName}.`
+      : "Welcome to World 404."
   });
 
   if (isDemo) {

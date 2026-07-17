@@ -18,14 +18,18 @@ such as [`/character/ConalH`](https://osrshub.pages.dev/character/ConalH).
 
 ## What is in the client?
 
+- **World 404** - a three-step profile connection ritual before the character
+  enters the client, with a static reduced-motion path.
 - **Inn viewport** - a profile avatar, overhead bio, combat level, status orbs,
   original CSS scenery, skillcapes, and repository trophies.
+- **Choose Option menus** - click, tap, or right-click the character, trophies,
+  skills, quests, equipment, supplies, and deeds for contextual actions.
 - **Skills** - ten stats derived from distinct public profile signals and mapped
   onto the community-documented RuneScape XP curve.
 - **Equipment** - starred, forked, recent, and language-dominant repositories
   become deterministic items with rarity tiers.
-- **Quest journal** - notable repositories become quests with difficulty and
-  quest-point values.
+- **Quest journal** - notable repositories gain deterministic parody titles,
+  difficulty, and quest points while their real repository names stay visible.
 - **Deed diary** - fourteen achievements show completed or live progress.
 - **Shareable routes** - every character lives at `/character/{username}`.
 

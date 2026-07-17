@@ -1,5 +1,6 @@
 import { getAchievements, type CharacterSheet } from "../../lib/githubCharacter";
 import type { ChatMessage } from "../Chatbox";
+import { ContextMenuButton } from "../ContextMenuButton";
 import { FloatingTooltip } from "../FloatingTooltip";
 
 export function DeedsTab({
@@ -24,17 +25,35 @@ export function DeedsTab({
       <ul className="deed-list">
         {achievements.map((achievement) => (
           <li key={achievement.id}>
-            <button
+            <ContextMenuButton
               type="button"
               className={achievement.earned ? "deed-row done" : "deed-row"}
-              onClick={() =>
-                say(
-                  "examine",
-                  achievement.earned
-                    ? `${achievement.name} — complete. ${achievement.flavor}`
-                    : `${achievement.name} — ${achievement.requirement}. Progress: ${achievement.current.toLocaleString()}/${achievement.goal.toLocaleString()}.`
-                )
-              }
+              items={[
+                {
+                  id: "check",
+                  label: "Check",
+                  target: achievement.name,
+                  onSelect: () =>
+                    say(
+                      "game",
+                      achievement.earned
+                        ? `${achievement.name} is complete. The diary ink glows green.`
+                        : `${achievement.name}: ${achievement.current.toLocaleString()}/${achievement.goal.toLocaleString()} complete.`,
+                    ),
+                },
+                {
+                  id: "examine",
+                  label: "Examine",
+                  target: achievement.name,
+                  onSelect: () =>
+                    say(
+                      "examine",
+                      achievement.earned
+                        ? `${achievement.name} — complete. ${achievement.flavor}`
+                        : `${achievement.name} — ${achievement.requirement}. Progress: ${achievement.current.toLocaleString()}/${achievement.goal.toLocaleString()}.`,
+                    ),
+                },
+              ]}
             >
               <span className="deed-name">{achievement.name}</span>
               <span className="deed-progress">
@@ -51,7 +70,7 @@ export function DeedsTab({
                     : `Progress: ${achievement.current.toLocaleString()} / ${achievement.goal.toLocaleString()}`}
                 </span>
               </FloatingTooltip>
-            </button>
+            </ContextMenuButton>
           </li>
         ))}
       </ul>

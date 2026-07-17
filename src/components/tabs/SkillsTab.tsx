@@ -7,6 +7,7 @@ import {
   type SkillName
 } from "../../lib/githubCharacter";
 import type { ChatMessage } from "../Chatbox";
+import { ContextMenuButton } from "../ContextMenuButton";
 import { FloatingTooltip } from "../FloatingTooltip";
 import { SKILL_ICONS } from "../icons";
 
@@ -17,7 +18,7 @@ export function SkillsTab({
   sheet: CharacterSheet;
   say: (kind: ChatMessage["kind"], text: string) => void;
 }) {
-  const handleClick = (skill: SkillName) => {
+  const examineSkill = (skill: SkillName) => {
     const xp = skillXpFromScore(sheet.skillScores[skill]);
     const level = sheet.skills[skill];
     const nextLevel =
@@ -43,13 +44,30 @@ export function SkillsTab({
 
           return (
             <li key={skill}>
-              <button
+              <ContextMenuButton
                 type="button"
                 className={
                   level >= 99 ? "rs-skill-cell maxed" : "rs-skill-cell"
                 }
-                onClick={() => handleClick(skill)}
                 aria-label={`${skill} level ${level} of 99, ${xp.toLocaleString()} experience`}
+                items={[
+                  {
+                    id: "guide",
+                    label: "View guide",
+                    target: skill,
+                    onSelect: () =>
+                      say(
+                        "game",
+                        `${skill} guide: ${SKILL_LORE[skill]}. Keep committing to train it.`,
+                      ),
+                  },
+                  {
+                    id: "examine",
+                    label: "Examine",
+                    target: skill,
+                    onSelect: () => examineSkill(skill),
+                  },
+                ]}
               >
                 <span
                   className={`rs-skill-icon skill-color-${skill.toLowerCase()}`}
@@ -74,7 +92,7 @@ export function SkillsTab({
                     <span>Skill mastered!</span>
                   )}
                 </FloatingTooltip>
-              </button>
+              </ContextMenuButton>
             </li>
           );
         })}

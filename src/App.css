@@ -293,6 +293,45 @@ p {
   margin: 1.4rem auto 0;
 }
 
+.world-badge {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 3px 7px;
+  border: 1px solid #17130e;
+  background: #27231c;
+  color: var(--hud-tan);
+  font-size: 0.72rem;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.world-badge span:first-child {
+  color: var(--hud-yellow);
+  font-weight: 700;
+}
+
+.world-badge--masthead {
+  margin-bottom: 0.65rem;
+}
+
+.world-online {
+  color: var(--hud-green);
+}
+
+.world-online::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 5px currentColor;
+}
+
 .login-title {
   color: var(--hud-yellow);
   font-size: 1.1rem;
@@ -335,6 +374,30 @@ p {
   height: 100%;
   background: linear-gradient(180deg, #ffec6a, #d8a625);
   animation: connect-sweep 1.5s ease-in-out infinite alternate;
+}
+
+.connection-steps {
+  display: flex;
+  gap: 7px;
+  margin: -0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.connection-steps li {
+  width: 7px;
+  height: 7px;
+  border: 1px solid #0d0b08;
+  background: #514a3c;
+}
+
+.connection-steps li.active {
+  background: var(--hud-yellow);
+  box-shadow: 0 0 5px rgba(255, 233, 58, 0.75);
+}
+
+.connection-steps li.complete {
+  background: var(--hud-green);
 }
 
 @keyframes connect-sweep {
@@ -784,16 +847,14 @@ p {
 }
 
 .context-menu {
-  position: absolute;
-  top: 56%;
-  left: 50%;
-  z-index: 70;
+  position: fixed;
+  z-index: 400;
   min-width: 210px;
+  max-width: min(310px, calc(100vw - 16px));
   overflow: hidden;
   border: 1px solid #000;
   background: #26221c;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
-  transform: translateX(-50%);
   pointer-events: auto;
 }
 
@@ -818,8 +879,10 @@ p {
   cursor: pointer;
 }
 
-.context-menu button:hover {
+.context-menu button:hover,
+.context-menu button:focus-visible {
   background: #4a4234;
+  outline: none;
 }
 
 .context-target {
@@ -1399,6 +1462,8 @@ p {
 }
 
 .quest-name {
+  display: grid;
+  gap: 1px;
   width: 100%;
   padding: 4px 5px;
   border: 0;
@@ -1409,6 +1474,17 @@ p {
   text-align: left;
   text-shadow: 1px 1px 0 #000;
   cursor: pointer;
+}
+
+.quest-name small {
+  color: var(--hud-tan);
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  opacity: 0.82;
+}
+
+.quest-name[data-journal-open="true"] {
+  background: rgba(255, 233, 58, 0.08);
 }
 
 .quest-name:hover {
@@ -1454,6 +1530,17 @@ p {
   color: var(--journal-maroon);
   font-size: 1.02rem;
   font-weight: 700;
+}
+
+.journal-repo {
+  margin: -0.15rem 0 0;
+  color: #6b4a28;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.journal-repo strong {
+  color: var(--journal-maroon);
 }
 
 .journal-flavor {

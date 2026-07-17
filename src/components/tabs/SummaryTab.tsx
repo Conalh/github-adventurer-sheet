@@ -1,5 +1,6 @@
 import { formatDate, type CharacterSheet } from "../../lib/githubCharacter";
 import type { ChatMessage } from "../Chatbox";
+import { ContextMenuButton } from "../ContextMenuButton";
 import { CrossedSwordsIcon } from "../icons";
 
 export function SummaryTab({
@@ -28,15 +29,31 @@ export function SummaryTab({
         <span className="quest-points">@{sheet.user.login}</span>
       </header>
 
-      <button
+      <ContextMenuButton
         type="button"
         className="combat-plaque"
-        onClick={() =>
-          say(
-            "examine",
-            `${displayName}: a ${sheet.characterClass.toLowerCase()} of combat level ${sheet.combatLevel} and total level ${sheet.totalLevel}.`
-          )
-        }
+        items={[
+          {
+            id: "lookup",
+            label: "Look up",
+            target: displayName,
+            onSelect: () =>
+              say(
+                "game",
+                `${displayName} is ranked on World 404 with total level ${sheet.totalLevel}.`,
+              ),
+          },
+          {
+            id: "examine",
+            label: "Examine",
+            target: displayName,
+            onSelect: () =>
+              say(
+                "examine",
+                `${displayName}: a ${sheet.characterClass.toLowerCase()} of combat level ${sheet.combatLevel} and total level ${sheet.totalLevel}.`,
+              ),
+          },
+        ]}
       >
         <span className="combat-plaque-icon" aria-hidden="true">
           <CrossedSwordsIcon />
@@ -49,7 +66,7 @@ export function SummaryTab({
           Total level
           <strong>{sheet.totalLevel}</strong>
         </span>
-      </button>
+      </ContextMenuButton>
 
       <dl className="summary-facts">
         {facts.map(([label, value]) => (

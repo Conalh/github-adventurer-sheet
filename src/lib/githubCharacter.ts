@@ -65,6 +65,7 @@ export type QuestDifficulty =
 
 export type CharacterQuest = {
   repo: GitHubRepo;
+  title: string;
   description: string;
   language: string;
   difficulty: QuestDifficulty;
@@ -524,7 +525,7 @@ export async function getGitHubCharacter(
 }
 
 export function getCharacterCacheKey(username: string): string {
-  return `github-character:v6:${username}`;
+  return `github-character:v7:${username}`;
 }
 
 async function fetchRepos(
@@ -666,6 +667,49 @@ function getRepositoryMetrics(
   };
 }
 
+const QUEST_TITLE_RULES: Array<{ pattern: RegExp; title: string }> = [
+  { pattern: /recover|restore|backup|trail/, title: "A Recovery Trail" },
+  { pattern: /agent|assistant|bot|copilot|\bai\b/, title: "Code's Assistant" },
+  { pattern: /daemon|server|worker|service/, title: "Daemon Slayer" },
+  { pattern: /array|data|database|store|cache/, title: "Shield of Array" },
+  { pattern: /dependency|package|\bnpm\b|module/, title: "Dependency Slayer" },
+  { pattern: /deploy|cloud|pages|infra|host/, title: "Recipe for Deployment" },
+  { pattern: /test|spec|lint|quality|regression/, title: "Regression Slayer" },
+  { pattern: /docs?|readme|wiki|guide/, title: "README & Juliet" },
+  { pattern: /security|policy|auth|guard|scope/, title: "The Policy of Array" },
+  { pattern: /ontology|schema|graph|taxonomy/, title: "Ontology's Wake" },
+];
+
+const FALLBACK_QUEST_TITLES = [
+  "One Small Commit",
+  "A Tail of Two Branches",
+  "The Restless Host",
+  "The Lost Repository",
+  "Commit Diplomacy",
+  "Branch of Misfortune",
+  "Ernest the Pipeline",
+] as const;
+
+export function getQuestParodyTitle(repo: GitHubRepo): string {
+  const searchable = [
+    repo.name,
+    repo.description ?? "",
+    repo.language ?? "",
+    ...(repo.topics ?? []),
+  ]
+    .join(" ")
+    .toLowerCase();
+  const matchedRule = QUEST_TITLE_RULES.find(({ pattern }) => pattern.test(searchable));
+
+  if (matchedRule) return matchedRule.title;
+
+  const hash = [...repo.full_name].reduce(
+    (total, character) => (total * 31 + character.charCodeAt(0)) >>> 0,
+    0,
+  );
+  return FALLBACK_QUEST_TITLES[hash % FALLBACK_QUEST_TITLES.length];
+}
+
 function getTopQuests(repos: GitHubRepo[]): CharacterQuest[] {
   return [...repos]
     .sort((left, right) => {
@@ -682,6 +726,7 @@ function getTopQuests(repos: GitHubRepo[]): CharacterQuest[] {
     .slice(0, 5)
     .map((repo) => ({
       repo,
+      title: getQuestParodyTitle(repo),
       description: repo.description || "No quest description recorded.",
       language: repo.language || "Unknown",
       difficulty: getQuestDifficulty(repo),

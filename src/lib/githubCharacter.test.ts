@@ -7,6 +7,7 @@ import {
   getCharacterCacheKey,
   getPrestige,
   getQuestDifficulty,
+  getQuestParodyTitle,
   levelFromScore,
   parseGitHubUsername,
   rsXpForLevel,
@@ -71,8 +72,8 @@ function repo(overrides: Partial<GitHubRepo>): GitHubRepo {
 describe("character cache key", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("uses the v6 namespace for trophy-room character records", () => {
-    expect(getCharacterCacheKey("ConalH")).toBe("github-character:v6:ConalH");
+  it("uses the v7 namespace for quest-title character records", () => {
+    expect(getCharacterCacheKey("ConalH")).toBe("github-character:v7:ConalH");
   });
 
   it("does not return an unexpired v5 record that lacks trophyRoom", async () => {
@@ -199,6 +200,32 @@ describe("quest difficulty", () => {
     expect(getQuestDifficulty(repo({ stargazers_count: 300, forks_count: 0 }))).toBe(
       "Master"
     );
+  });
+});
+
+describe("quest parody titles", () => {
+  it("uses project evidence to assign recognizable quest puns", () => {
+    expect(getQuestParodyTitle(repo({ name: "recoverytrail" }))).toBe(
+      "A Recovery Trail",
+    );
+    expect(getQuestParodyTitle(repo({ name: "agent-pulse" }))).toBe(
+      "Code's Assistant",
+    );
+    expect(getQuestParodyTitle(repo({ name: "package-auditor" }))).toBe(
+      "Dependency Slayer",
+    );
+  });
+
+  it("is deterministic and leaves the actual repository identity intact", () => {
+    const source = repo({
+      name: "sol",
+      full_name: "ConalH/sol",
+      description: "A graph and schema toolkit",
+    });
+
+    expect(getQuestParodyTitle(source)).toBe("Ontology's Wake");
+    expect(getQuestParodyTitle(source)).toBe(getQuestParodyTitle({ ...source }));
+    expect(source.name).toBe("sol");
   });
 });
 

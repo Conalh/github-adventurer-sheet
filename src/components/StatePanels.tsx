@@ -1,18 +1,75 @@
+import { useEffect, useState } from "react";
 import type { GitHubCharacterErrorKind } from "../lib/githubCharacter";
 
+const CONNECTION_PHASES = [
+  {
+    title: "Connecting to World 404…",
+    copy: "Attempting to establish a profile connection for",
+    hint: "Checking the public profile server…",
+  },
+  {
+    title: "Loading — please wait.",
+    copy: "Retrieving the adventurer record for",
+    hint: "Reading repositories and quest records…",
+  },
+  {
+    title: "Preparing character…",
+    copy: "Rolling a deterministic character sheet for",
+    hint: "Calculating levels, relics, and quest points…",
+  },
+] as const;
+
 export function LoadingState({ username }: { username: string }) {
+  const [phase, setPhase] = useState(0);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reducedMotion) {
+      setPhase(CONNECTION_PHASES.length - 1);
+      return;
+    }
+
+    setPhase(0);
+    const timers = [
+      window.setTimeout(() => setPhase(1), 300),
+      window.setTimeout(() => setPhase(2), 650),
+    ];
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [username]);
+
+  const current = CONNECTION_PHASES[phase];
+
   return (
-    <section className="login-box state-box" aria-busy="true" aria-live="polite">
-      <h2 className="login-title">Connecting to GitHub…</h2>
+    <section
+      className="login-box state-box connection-state"
+      aria-busy="true"
+      aria-live="polite"
+      data-connection-phase={phase + 1}
+    >
+      <p className="world-badge">
+        <span>World 404</span>
+        <span className="world-online">Online</span>
+      </p>
+      <h2 className="login-title">{current.title}</h2>
       <p className="login-copy">
-        Summoning <strong>@{username}</strong> from the archives.
+        {current.copy} <strong>@{username}</strong>.
       </p>
       <div className="connect-bar" aria-hidden="true">
         <span />
       </div>
-      <p className="login-hint">
-        Weighing stars, appraising relics, counting quest points…
-      </p>
+      <ol className="connection-steps" aria-hidden="true">
+        {CONNECTION_PHASES.map((connectionPhase, index) => (
+          <li
+            key={connectionPhase.title}
+            className={index < phase ? "complete" : index === phase ? "active" : ""}
+          />
+        ))}
+      </ol>
+      <p className="login-hint">{current.hint}</p>
     </section>
   );
 }
@@ -31,8 +88,8 @@ export function ErrorState({
   const titleByKind: Record<GitHubCharacterErrorKind, string> = {
     invalid_username: "Invalid adventurer name",
     not_found: "Adventurer not found",
-    rate_limit: "The realm is busy",
-    network: "Unable to connect",
+    rate_limit: "This world is full",
+    network: "Connection lost",
     generic: "The summoning failed"
   };
 

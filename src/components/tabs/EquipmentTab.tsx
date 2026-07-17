@@ -6,6 +6,7 @@ import {
   type EquipmentSlot
 } from "../../lib/equipment";
 import type { ChatMessage } from "../Chatbox";
+import { ContextMenuButton } from "../ContextMenuButton";
 import { FloatingTooltip } from "../FloatingTooltip";
 import {
   AmuletIcon,
@@ -72,13 +73,30 @@ export function EquipmentTab({
           const SlotIcon = SLOT_ICONS[item.slot];
 
           return (
-            <button
+            <ContextMenuButton
               key={item.slot}
               type="button"
               className={`worn-slot filled${item.isFallback ? " fallback" : ""} rarity-${item.rarity.toLowerCase()}`}
               style={{ gridArea: SLOT_AREAS[item.slot] }}
-              onClick={() => examine(item)}
               aria-label={`${item.slot}: ${item.name}, ${item.rarity}. ${item.detail}`}
+              items={[
+                {
+                  id: "remove",
+                  label: "Remove",
+                  target: item.name,
+                  onSelect: () =>
+                    say(
+                      "game",
+                      `You remove ${item.name} for one tick, then wisely put it back.`,
+                    ),
+                },
+                {
+                  id: "examine",
+                  label: "Examine",
+                  target: item.name,
+                  onSelect: () => examine(item),
+                },
+              ]}
             >
               <SlotIcon />
               <FloatingTooltip>
@@ -90,7 +108,7 @@ export function EquipmentTab({
                 </em>
                 <span>{item.detail}</span>
               </FloatingTooltip>
-            </button>
+            </ContextMenuButton>
           );
         })}
 
@@ -100,14 +118,32 @@ export function EquipmentTab({
       <ul className="inventory-grid" aria-label="Backpack supplies">
         {sheet.equipment.backpack.map((item) => (
           <li key={item.id}>
-            <button
+            <ContextMenuButton
               type="button"
               className="inventory-item"
-              onClick={() => say(
-                "examine",
-                `${item.name} (${item.count.toLocaleString("en")}): ${item.examine}`
-              )}
               aria-label={`${item.name}, ${item.count.toLocaleString("en")} — ${item.examine}`}
+              items={[
+                {
+                  id: "use",
+                  label: "Use",
+                  target: item.name,
+                  onSelect: () =>
+                    say(
+                      "game",
+                      `You use ${item.name}. The repository economy remains unchanged.`,
+                    ),
+                },
+                {
+                  id: "examine",
+                  label: "Examine",
+                  target: item.name,
+                  onSelect: () =>
+                    say(
+                      "examine",
+                      `${item.name} (${item.count.toLocaleString("en")}): ${item.examine}`,
+                    ),
+                },
+              ]}
             >
               <span className={`inventory-glyph kind-${item.kind}`} aria-hidden="true">
                 {item.abbreviation}
@@ -118,7 +154,7 @@ export function EquipmentTab({
               <FloatingTooltip>
                 <strong>{item.name}</strong>
               </FloatingTooltip>
-            </button>
+            </ContextMenuButton>
           </li>
         ))}
       </ul>

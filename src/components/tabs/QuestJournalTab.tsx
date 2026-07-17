@@ -5,6 +5,7 @@ import type {
   QuestDifficulty
 } from "../../lib/githubCharacter";
 import type { ChatMessage } from "../Chatbox";
+import { ContextMenuButton } from "../ContextMenuButton";
 
 const QUEST_POINTS: Record<QuestDifficulty, number> = {
   Novice: 1,
@@ -49,7 +50,7 @@ export function QuestJournalTab({
     if (isOpening) {
       say(
         "game",
-        `You open your journal to "${quest.repo.name}" (${quest.difficulty.toLowerCase()} quest).`
+        `You open "${quest.title}" — the quest record for ${quest.repo.name} (${quest.difficulty.toLowerCase()}).`
       );
     }
   };
@@ -67,18 +68,47 @@ export function QuestJournalTab({
 
           return (
             <li key={quest.repo.id}>
-              <button
+              <ContextMenuButton
                 type="button"
                 className={`quest-name difficulty-${quest.difficulty.toLowerCase()}`}
-                aria-expanded={open}
-                onClick={() => toggleQuest(quest)}
+                aria-label={`${quest.title}, repository ${quest.repo.name}, ${quest.difficulty} quest`}
+                data-journal-open={open || undefined}
+                items={[
+                  {
+                    id: "open",
+                    label: open ? "Close quest" : "Open quest",
+                    target: quest.title,
+                    onSelect: () => toggleQuest(quest),
+                  },
+                  {
+                    id: "examine",
+                    label: "Examine",
+                    target: quest.title,
+                    onSelect: () =>
+                      say(
+                        "examine",
+                        `${quest.title}: the journal alias for ${quest.repo.full_name}. ${quest.description}`,
+                      ),
+                  },
+                  {
+                    id: "repository",
+                    label: "Visit repository",
+                    target: quest.repo.name,
+                    onSelect: () =>
+                      window.open(quest.repo.html_url, "_blank", "noreferrer"),
+                  },
+                ]}
               >
-                {quest.repo.name}
-              </button>
+                <span>{quest.title}</span>
+                <small>{quest.repo.name}</small>
+              </ContextMenuButton>
 
               {open ? (
                 <div className="quest-journal-page">
-                  <h4>{quest.repo.name}</h4>
+                  <h4>{quest.title}</h4>
+                  <p className="journal-repo">
+                    Repository: <strong>{quest.repo.full_name}</strong>
+                  </p>
                   <p className="journal-flavor">{quest.description}</p>
                   <ul className="journal-facts">
                     <li>
