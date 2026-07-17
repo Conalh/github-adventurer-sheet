@@ -37,7 +37,9 @@ describe("RealmScene", () => {
 
     expect(styles).toMatch(/\.inn-room--heroes\s*\{[^}]*--wood:/s);
     expect(styles).toMatch(/\.legend-hall\s*\{[^}]*radial-gradient/s);
-    expect(styles).toMatch(/\.realm-legend \.trophy-wall\s*\{[^}]*z-index:\s*5/s);
+    expect(styles).toMatch(
+      /\.realm-legend \.trophy-wall\s*\{(?=[^}]*inset:\s*82px 28px 72px)(?![^}]*z-index:)[^}]*\}/s,
+    );
     expect(styles).toMatch(/\.realm-legend \.player-avatar\s*\{[^}]*border-color:\s*#e1bd58/s);
   });
 });
