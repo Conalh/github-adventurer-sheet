@@ -1,96 +1,114 @@
 # GitHub Adventurer Sheet
 
+[![CI](https://github.com/Conalh/github-adventurer-sheet/actions/workflows/ci.yml/badge.svg)](https://github.com/Conalh/github-adventurer-sheet/actions/workflows/ci.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-ffe93a.svg)](LICENSE)
+[![Live demo](https://img.shields.io/badge/play-osrshub.pages.dev-17ff3c.svg)](https://osrshub.pages.dev)
+
 Enter thy GitHub name to play.
 
-GitHub Adventurer Sheet renders any public GitHub profile as an old-school
-MMO character — inside a loving, fan-made parody of the classic RuneScape
-game client. Stone-framed game window, a skills tab with `58/99` cells and
-authentic experience numbers, a worn-equipment cross, a quest journal on
-parchment, a deed diary, and a chatbox that congratulates you on your level.
+GitHub Adventurer Sheet turns any public GitHub profile into a deterministic
+old-school MMO character sheet. Repositories become quests and equipment;
+languages, stars, followers, and account history become skills, levels, deeds,
+and trophies. The same public profile always rolls the same hero.
 
-Every number is computed deterministically from real public data: the same
-profile always rolls the same hero.
+**[Summon an adventurer](https://osrshub.pages.dev)** or open a shareable route
+such as [`/character/ConalH`](https://osrshub.pages.dev/character/ConalH).
 
-## The client
+![GitHub Adventurer Sheet showing a generated profile inside the original inn client](public/adventurer-sheet.png)
 
-- **Viewport** — your avatar standing in a dusk meadow, pixelated like a
-  game character, with your bio as overhead chat, your name and combat level
-  in right-click-menu style, and a decorative minimap.
-- **Skills tab** — ten skills (Attack, Strength, Defence, Ranged, Magic,
-  Crafting, Mining, Smithing, Prayer, Hitpoints), each levelled 1–99 from a
-  different signal in the profile (original repos, stars earned, account
-  age, languages, followers, …). Hovering a skill shows its experience on
-  the *genuine* RuneScape XP table — level 99 is exactly 13,034,431 XP —
-  and clicking reports it to the chatbox.
-- **Worn equipment** — your most starred repo becomes a Blade, your most
-  forked an Aegis, your most recent a Signet, plus a Cape woven from account
-  age and an Amulet attuned to your dominant language. Rarities run Common →
-  Legendary; legendary items glow. Click anything to examine it.
-- **Quest journal** — top repositories as quests with difficulty colours and
-  quest points; opening one unrolls a parchment journal page.
-- **Deed diary** — fourteen achievements in diary style: green and ticked
-  when complete, red with live progress when not.
-- **Chatbox** — welcome message, level-up congratulations, deed broadcasts,
-  and examine text. The Share button copies a link to the sheet.
+## What is in the client?
 
-Character pages live at `/character/{username}` and are shareable.
+- **Inn viewport** - a profile avatar, overhead bio, combat level, status orbs,
+  original CSS scenery, skillcapes, and repository trophies.
+- **Skills** - ten stats derived from distinct public profile signals and mapped
+  onto the community-documented RuneScape XP curve.
+- **Equipment** - starred, forked, recent, and language-dominant repositories
+  become deterministic items with rarity tiers.
+- **Quest journal** - notable repositories become quests with difficulty and
+  quest-point values.
+- **Deed diary** - fourteen achievements show completed or live progress.
+- **Shareable routes** - every character lives at `/character/{username}`.
 
-## Use
+## Privacy and data
 
-```sh
-npm install
-npm run dev
-```
-
-Open the printed local URL, then enter a GitHub username or profile URL.
-Accepted inputs include:
-
-```text
-ConalH
-@ConalH
-github.com/ConalH
-https://github.com/ConalH
-https://www.github.com/ConalH
-```
-
-`ConalH` is only the default demo profile. Any valid public GitHub username
-can be summoned.
-
-## Data source
-
-The app uses the public GitHub REST API:
+The app is entirely browser-side. It requests only public data from GitHub:
 
 ```text
 GET https://api.github.com/users/{username}
 GET https://api.github.com/users/{username}/repos?per_page=100&sort=updated
 ```
 
-Repository pagination is handled up to 300 repositories, and results are
-cached in `localStorage` for ten minutes. No scraping, no login, no
-tracking.
+Repository pagination is handled up to 300 repositories. Results are cached in
+`localStorage` for ten minutes. There is no login, analytics, tracking, server
+database, or frontend token. Unauthenticated GitHub API rate limits still
+apply.
 
-This is a browser-only app, so it does not read `GITHUB_TOKEN` — shipping a
-token in frontend code would expose it. A server-side proxy could add
-optional token support later if rate limits become a problem.
+Accepted input forms include:
 
-## Parody & assets note
+```text
+ConalH
+@ConalH
+github.com/ConalH
+https://github.com/ConalH
+```
 
-This is a fan-made parody. It is not affiliated with, endorsed by, or
-connected to Jagex or RuneScape in any way. **No game assets are used**:
-every panel, border, icon, and scene is original CSS and hand-drawn inline
-SVG, and the typefaces are open-licensed lookalikes — Pixelify Sans for UI
-text, Jacquard 12 for the wordmark, and a digits-only subset of VT323
-(bundled in `src/assets`, OFL license alongside) so that stats stay
-legible. The experience table formula is the community-documented curve.
+## Run locally
 
-## Test
+Requires Node.js 22.12 or newer.
+
+```sh
+npm ci
+npm run dev
+```
+
+Then open the local URL printed by Vite.
+
+## Verify a change
 
 ```sh
 npm test
 npm run build
 ```
 
-Unit tests cover username/profile URL parsing, level scaling and clamping,
-the RuneScape experience table, score-to-XP interpolation, combat level
-clamping, quest difficulty mapping, equipment naming and rarity tiers,
-achievement progress, and missing repository fields.
+The suite covers profile parsing, caching, pagination, level scaling, XP
+interpolation, combat-level clamping, quests, equipment, achievements, trophy
+placement, missing API fields, and component rendering.
+
+## How it works
+
+```text
+GitHub REST API
+      |
+      v
+public profile + repositories
+      |
+      v
+deterministic scoring and classification
+      |
+      v
+React character sheet + shareable route
+```
+
+No random values or hidden server state are involved. The transformation logic
+lives in `src/lib/githubCharacter.ts`, `src/lib/equipment.ts`, and
+`src/lib/trophyRoom.ts`; the rendered client lives under `src/components/`.
+
+## Parody and assets
+
+This is an independent, fan-made parody. It is not affiliated with, endorsed
+by, or connected to GitHub, Jagex, or RuneScape.
+
+No game assets are used. Panels, borders, icons, trophies, equipment, and the
+inn scene are original CSS and inline SVG. Pixelify Sans and Jacquard 12 are
+open-licensed font packages; the bundled digits-only VT323 subset includes its
+OFL license in `src/assets/VT323-LICENSE`.
+
+## Contributing and license
+
+Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Security
+reports belong in [private vulnerability reporting](SECURITY.md), not a public
+issue.
+
+The original code and artwork in this repository are available under the
+[MIT License](LICENSE). Third-party trademarks and font licenses remain with
+their respective owners.

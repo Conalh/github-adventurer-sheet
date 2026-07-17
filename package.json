@@ -1,8 +1,17 @@
 {
-  "name": "github-runescape-character",
+  "name": "github-adventurer-sheet",
   "private": true,
   "version": "0.1.0",
+  "description": "Turn any public GitHub profile into a deterministic old-school MMO character sheet.",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Conalh/github-adventurer-sheet.git"
+  },
+  "homepage": "https://osrshub.pages.dev",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
@@ -12,15 +21,16 @@
   "dependencies": {
     "@fontsource/jacquard-12": "^5.2.8",
     "@fontsource/pixelify-sans": "^5.2.7",
-    "@vitejs/plugin-react": "^4.6.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "typescript": "^5.8.3",
-    "vite": "^7.0.0"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "vitest": "^3.2.4"
-  }
+    "@vitejs/plugin-react": "^6.0.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  },
+  "license": "MIT"
 }
